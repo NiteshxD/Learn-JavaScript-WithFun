@@ -65,6 +65,7 @@ const ResultPage = () => {
         wrongAnswers,
         timeTaken,
         difficulty,
+        questionCount: totalQuestions,
       }).catch((err) => console.error("Failed to submit score:", err));
       setSubmitted(true);
     }

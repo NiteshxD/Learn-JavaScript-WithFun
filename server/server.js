@@ -1,5 +1,5 @@
 // =============================================================================
-// Express Server — Entry Point
+// Express + Socket.io Server — Entry Point
 // =============================================================================
 // This is the main entry point for the backend API server.
 //
@@ -9,20 +9,22 @@
 //   3. Configure Express middleware (CORS, JSON parsing)
 //   4. Mount API routes
 //   5. Attach global error handler
-//   6. Start listening on the configured port
+//   6. Initialize Socket.io for real-time multiplayer
+//   7. Start listening on the configured port
 //
-// WHY THIS ORDER?
-//   Express processes middleware in the order they are registered.
-//   CORS and JSON parsing must be registered BEFORE routes so that
-//   request bodies are parsed when controllers receive them.
-//   The error handler must be LAST to catch any unhandled errors.
+// WHY http.createServer?
+//   Socket.io requires a raw Node.js HTTP server to attach to.
+//   Express alone doesn't expose this, so we create it explicitly.
 // =============================================================================
 
 const express = require("express");
+const http = require("http");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const { Server } = require("socket.io");
 const connectDB = require("./config/db");
 const errorHandler = require("./middlewares/errorHandler");
+const initializeSocket = require("./socket");
 
 // -- Load environment variables from .env file --
 dotenv.config();
@@ -30,19 +32,45 @@ dotenv.config();
 // -- Initialize Express application --
 const app = express();
 
+// -- Create HTTP server (needed for Socket.io) --
+const server = http.createServer(app);
+
 // =============================================================================
-// Middleware Stack
+// CORS Configuration
 // =============================================================================
 
-// Enable CORS for all origins (will be restricted in production)
-// This allows the React frontend (running on a different port) to make API calls
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL || "*",
+const allowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(",").map((url) => url.trim())
+  : ["*"];
+
+const corsOptions = {
+  origin: allowedOrigins.includes("*") ? "*" : allowedOrigins,
+  methods: ["GET", "POST"],
+  credentials: true,
+};
+
+// Apply CORS to Express routes
+app.use(cors(corsOptions));
+
+// =============================================================================
+// Socket.io Initialization
+// =============================================================================
+
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins.includes("*") ? "*" : allowedOrigins,
     methods: ["GET", "POST"],
-    credentials: true,
-  })
-);
+  },
+  // Render/Vercel compatible transports
+  transports: ["websocket", "polling"],
+});
+
+// Register all socket event handlers
+initializeSocket(io);
+
+// =============================================================================
+// Express Middleware
+// =============================================================================
 
 // Parse incoming JSON request bodies
 // limit is set to 10kb to prevent payload-based attacks
@@ -81,12 +109,14 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 
 // Connect to MongoDB first, then start listening
+// NOTE: We use server.listen (not app.listen) because Socket.io is attached to `server`
 connectDB().then(() => {
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`\n🎮 ══════════════════════════════════════════`);
     console.log(`   JS Quiz API Server`);
     console.log(`   Running on: http://localhost:${PORT}`);
     console.log(`   Environment: ${process.env.NODE_ENV || "development"}`);
+    console.log(`   Socket.io:   ✅ Ready`);
     console.log(`🎮 ══════════════════════════════════════════\n`);
   });
 });

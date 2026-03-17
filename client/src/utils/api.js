@@ -25,10 +25,11 @@ const api = axios.create({
 /**
  * Fetch quiz questions by difficulty level
  * @param {string} difficulty - "easy" | "medium" | "hard"
+ * @param {number} [count=10] - Number of questions (10, 25, or 50)
  * @returns {Promise<Array>} Array of question objects
  */
-export const fetchQuestions = async (difficulty) => {
-  const response = await api.get(`/questions?difficulty=${difficulty}`);
+export const fetchQuestions = async (difficulty, count = 10) => {
+  const response = await api.get(`/questions?difficulty=${difficulty}&count=${count}`);
   return response.data.data;
 };
 
@@ -45,10 +46,15 @@ export const submitScore = async (scoreData) => {
 /**
  * Fetch leaderboard entries
  * @param {string} [difficulty] - Optional difficulty filter
+ * @param {number} [questionCount] - Optional question count filter (10, 25, or 50)
  * @returns {Promise<Array>} Array of leaderboard entries
  */
-export const fetchLeaderboard = async (difficulty) => {
-  const url = difficulty ? `/leaderboard?difficulty=${difficulty}` : "/leaderboard";
+export const fetchLeaderboard = async (difficulty, questionCount) => {
+  const params = new URLSearchParams();
+  if (difficulty) params.append("difficulty", difficulty);
+  if (questionCount) params.append("questionCount", questionCount);
+  const query = params.toString();
+  const url = query ? `/leaderboard?${query}` : "/leaderboard";
   const response = await api.get(url);
   return response.data.data;
 };

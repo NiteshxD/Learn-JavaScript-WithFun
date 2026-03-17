@@ -5,8 +5,11 @@
 // If a value changes (e.g., total questions), it only needs updating here.
 // =============================================================================
 
-/** Total number of questions per quiz session */
+/** Default number of questions per quiz session */
 export const TOTAL_QUESTIONS = 10;
+
+/** Available question count options */
+export const QUESTION_COUNTS = [10, 25, 50];
 
 /** Available difficulty levels */
 export const DIFFICULTIES = [
@@ -39,6 +42,7 @@ export const DIFFICULTIES = [
 /** Navigation menu items */
 export const NAV_LINKS = [
   { path: "/", label: "Home", emoji: "🏠" },
+  { path: "/party", label: "Party", emoji: "🎉" },
   { path: "/leaderboard", label: "Leaderboard", emoji: "🏆" },
   { path: "/about", label: "About", emoji: "ℹ️" },
 ];

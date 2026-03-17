@@ -1,60 +1,70 @@
 // =============================================================================
-// App.jsx — Root Application Component
-// =============================================================================
-// Sets up React Router for page navigation and wraps the app with
-// context providers and layout components (Navbar, Footer).
-//
-// ARCHITECTURE:
-//   HelmetProvider → ThemeProvider → QuizProvider → Router → Layout → Pages
-//
-// WHY THIS ORDER?
-//   - HelmetProvider: Must wrap any component using <Helmet>
-//   - ThemeProvider: Must wrap everything so dark mode applies globally
-//   - QuizProvider: Must wrap all quiz-related pages
-//   - BrowserRouter: React Router provides navigation context
+// App Root — Layout, Routing, and context Providers
 // =============================================================================
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { ThemeProvider } from "./context/ThemeContext";
 import { QuizProvider } from "./context/QuizContext";
+import { SocketProvider } from "./context/SocketContext";
+import { PartyProvider } from "./context/PartyContext";
+
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+
+// Pages
 import HomePage from "./pages/HomePage";
 import QuizPage from "./pages/QuizPage";
 import ResultPage from "./pages/ResultPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import AboutPage from "./pages/AboutPage";
-import "./index.css";
+import PartyPage from "./pages/PartyPage";
+import LobbyPage from "./pages/LobbyPage";
+import MultiplayerQuizPage from "./pages/MultiplayerQuizPage";
+import PartyResultPage from "./pages/PartyResultPage";
 
 function App() {
   return (
     <HelmetProvider>
       <ThemeProvider>
         <QuizProvider>
-          <Router>
-            {/* Main layout wrapper */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                minHeight: "100vh",
-              }}
-            >
-              <Navbar />
+          <SocketProvider>
+            <PartyProvider>
+              <Router>
+                <div
+                  style={{
+                    minHeight: "100vh",
+                    display: "flex",
+                    flexDirection: "column",
+                    background: "var(--bg-primary)",
+                    color: "var(--text-primary)",
+                    transition: "background 0.3s, color 0.3s",
+                  }}
+                >
+                  <Navbar />
+                  <div style={{ flex: 1 }}>
+                    <Routes>
+                      {/* Solo Mode */}
+                      <Route path="/" element={<HomePage />} />
+                      <Route path="/quiz" element={<QuizPage />} />
+                      <Route path="/result" element={<ResultPage />} />
 
-              {/* Page Routes */}
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/quiz" element={<QuizPage />} />
-                <Route path="/result" element={<ResultPage />} />
-                <Route path="/leaderboard" element={<LeaderboardPage />} />
-                <Route path="/about" element={<AboutPage />} />
-              </Routes>
+                      {/* Party Mode */}
+                      <Route path="/party" element={<PartyPage />} />
+                      <Route path="/lobby" element={<LobbyPage />} />
+                      <Route path="/multiplayer-quiz" element={<MultiplayerQuizPage />} />
+                      <Route path="/party-result" element={<PartyResultPage />} />
 
-              <Footer />
-            </div>
-          </Router>
+                      {/* Global */}
+                      <Route path="/leaderboard" element={<LeaderboardPage />} />
+                      <Route path="/about" element={<AboutPage />} />
+                    </Routes>
+                  </div>
+                  <Footer />
+                </div>
+              </Router>
+            </PartyProvider>
+          </SocketProvider>
         </QuizProvider>
       </ThemeProvider>
     </HelmetProvider>

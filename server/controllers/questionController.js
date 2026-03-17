@@ -1,51 +1,53 @@
 // =============================================================================
 // Question Controller
 // =============================================================================
-// Handles all business logic for quiz questions.
+// Handles business logic for quiz questions.
 //
-// Endpoints:
-//   GET /api/questions?difficulty=easy|medium|hard
-//     → Returns 50 randomized questions for the given difficulty
+// RANDOMIZATION STRATEGY:
+//   MongoDB's $sample aggregation stage picks random documents from a
+//   collection. This is much more efficient than fetching all documents
+//   and randomizing in JavaScript.
 //
-// WHY RANDOMIZATION?
-//   We use MongoDB's $sample aggregation to shuffle questions server-side.
-//   This ensures every quiz attempt gets a unique question order without
-//   needing client-side shuffling, which would expose all questions.
+// QUERY PARAMS:
+//   - difficulty (required): "easy" | "medium" | "hard"
+//   - count (optional): Number of questions (10, 25, or 50). Default: 10
 // =============================================================================
 
 const Question = require("../models/Question");
 
 /**
- * @desc    Get randomized questions filtered by difficulty
- * @route   GET /api/questions?difficulty=easy|medium|hard
+ * @desc    Get randomized questions by difficulty
+ * @route   GET /api/questions?difficulty=easy&count=10
  * @access  Public
  */
 const getQuestions = async (req, res, next) => {
   try {
-    const { difficulty } = req.query;
+    const { difficulty, count } = req.query;
 
-    // Validate that difficulty parameter is provided
-    if (!difficulty) {
-      return res.status(400).json({
-        success: false,
-        message: "Please provide a difficulty level (easy, medium, or hard)",
-      });
-    }
-
-    // Validate difficulty value
+    // Validate difficulty parameter
     const validDifficulties = ["easy", "medium", "hard"];
-    if (!validDifficulties.includes(difficulty.toLowerCase())) {
+    if (!difficulty || !validDifficulties.includes(difficulty.toLowerCase())) {
       return res.status(400).json({
         success: false,
-        message: "Difficulty must be one of: easy, medium, hard",
+        message: "Please provide a valid difficulty: easy, medium, or hard",
       });
     }
 
-    // Use MongoDB aggregation pipeline with $sample for true randomization
-    // $match filters by difficulty, $sample randomly selects 50 documents
+    // Validate and parse question count
+    const validCounts = [10, 25, 50];
+    const questionCount = parseInt(count) || 10;
+    if (!validCounts.includes(questionCount)) {
+      return res.status(400).json({
+        success: false,
+        message: "Question count must be 10, 25, or 50",
+      });
+    }
+
+    // Use MongoDB aggregation pipeline for server-side randomization
+    // $match filters by difficulty, $sample randomly selects N documents
     const questions = await Question.aggregate([
       { $match: { difficulty: difficulty.toLowerCase() } },
-      { $sample: { size: 10 } },
+      { $sample: { size: questionCount } },
     ]);
 
     // If no questions found for this difficulty
@@ -62,7 +64,7 @@ const getQuestions = async (req, res, next) => {
       data: questions,
     });
   } catch (error) {
-    next(error); // Pass to error handler middleware
+    next(error);
   }
 };
 

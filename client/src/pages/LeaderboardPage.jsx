@@ -18,6 +18,7 @@ import { formatTimeReadable } from "../utils/helpers";
 const LeaderboardPage = () => {
   const [entries, setEntries] = useState([]);
   const [filter, setFilter] = useState(""); // Empty = all difficulties
+  const [countFilter, setCountFilter] = useState(""); // Empty = all counts
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -27,7 +28,7 @@ const LeaderboardPage = () => {
       setIsLoading(true);
       setError("");
       try {
-        const data = await fetchLeaderboard(filter || undefined);
+        const data = await fetchLeaderboard(filter || undefined, countFilter || undefined);
         setEntries(data);
       } catch (err) {
         setError("Failed to load leaderboard. Is the backend running?");
@@ -37,7 +38,7 @@ const LeaderboardPage = () => {
       }
     };
     loadLeaderboard();
-  }, [filter]);
+  }, [filter, countFilter]);
 
   // Rank badge for top 3
   const getRankBadge = (index) => {
@@ -131,6 +132,42 @@ const LeaderboardPage = () => {
                   color: filter === btn.value ? "#fff" : "var(--text-secondary)",
                   fontWeight: 700,
                   fontSize: "0.9rem",
+                  cursor: "pointer",
+                  fontFamily: "var(--font-body)",
+                  transition: "all 0.2s",
+                }}
+              >
+                {btn.label}
+              </motion.button>
+            ))}
+          </div>
+
+          {/* Question Count Filter */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "8px",
+              marginBottom: "24px",
+              flexWrap: "wrap",
+            }}
+          >
+            {[{ label: "All Counts", value: "" }, { label: "10 Qs", value: "10" }, { label: "25 Qs", value: "25" }, { label: "50 Qs", value: "50" }].map((btn) => (
+              <motion.button
+                key={btn.value}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setCountFilter(btn.value)}
+                style={{
+                  padding: "6px 16px",
+                  borderRadius: "var(--radius-full)",
+                  border: "2px solid var(--border-color)",
+                  background: countFilter === btn.value
+                    ? "linear-gradient(135deg, var(--color-secondary), var(--color-accent))"
+                    : "var(--bg-card)",
+                  color: countFilter === btn.value ? "#fff" : "var(--text-secondary)",
+                  fontWeight: 700,
+                  fontSize: "0.85rem",
                   cursor: "pointer",
                   fontFamily: "var(--font-body)",
                   transition: "all 0.2s",

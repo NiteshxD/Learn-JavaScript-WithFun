@@ -18,7 +18,7 @@ import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
 import { useQuizContext } from "../context/QuizContext";
 import DifficultyCard from "../components/DifficultyCard";
-import { DIFFICULTIES } from "../utils/constants";
+import { DIFFICULTIES, QUESTION_COUNTS } from "../utils/constants";
 import { fetchQuestions } from "../utils/api";
 import useSound from "../hooks/useSound";
 
@@ -29,6 +29,7 @@ const HomePage = () => {
 
   const [nameInput, setNameInput] = useState("");
   const [selectedDifficulty, setSelectedDifficulty] = useState("");
+  const [selectedCount, setSelectedCount] = useState(10);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -55,7 +56,7 @@ const HomePage = () => {
       setDifficulty(selectedDifficulty);
 
       // Fetch randomized questions from the API
-      const questions = await fetchQuestions(selectedDifficulty);
+      const questions = await fetchQuestions(selectedDifficulty, selectedCount);
 
       // Start the quiz and navigate
       startQuiz(questions);
@@ -214,6 +215,44 @@ const HomePage = () => {
             </div>
           </div>
 
+          {/* Question Count Selection */}
+          <div style={{ marginBottom: "28px" }}>
+            <p
+              style={{
+                fontFamily: "var(--font-heading)",
+                fontSize: "1.1rem",
+                marginBottom: "14px",
+                color: "var(--text-primary)",
+              }}
+            >
+              📝 How many questions?
+            </p>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+              {QUESTION_COUNTS.map((count) => (
+                <motion.button
+                  key={count}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => { setSelectedCount(count); setError(""); }}
+                  style={{
+                    padding: "12px 24px",
+                    borderRadius: "var(--radius-md)",
+                    border: `2px solid ${selectedCount === count ? "var(--color-primary)" : "var(--border-color)"}`,
+                    background: selectedCount === count ? "rgba(74, 222, 128, 0.15)" : "var(--bg-card)",
+                    color: selectedCount === count ? "var(--color-primary)" : "var(--text-primary)",
+                    fontFamily: "var(--font-heading)",
+                    fontSize: "1.2rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    boxShadow: "var(--shadow-card)",
+                  }}
+                >
+                  {count}
+                </motion.button>
+              ))}
+            </div>
+          </div>
+
           {/* Error Message */}
           {error && (
             <motion.p
@@ -243,9 +282,26 @@ const HomePage = () => {
               fontSize: "1.3rem",
               padding: "16px 40px",
               opacity: isLoading ? 0.7 : 1,
+              marginBottom: "12px",
             }}
           >
-            {isLoading ? "⏳ Loading Questions..." : "🚀 Start Quiz!"}
+            {isLoading ? "⏳ Loading Questions..." : "🚀 Start Solo Quiz!"}
+          </motion.button>
+
+          {/* Party Mode Button */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate("/party")}
+            className="btn-game btn-accent"
+            style={{
+              width: "100%",
+              maxWidth: "320px",
+              fontSize: "1.1rem",
+              padding: "14px 40px",
+            }}
+          >
+            🎉 Party Mode (Multiplayer)
           </motion.button>
 
           {/* Quick Stats */}
@@ -256,7 +312,7 @@ const HomePage = () => {
               fontSize: "0.85rem",
             }}
           >
-            50 questions • Randomized each time • Timed challenge
+            {selectedCount} questions • Randomized each time • Timed challenge
           </p>
         </motion.div>
       </main>
