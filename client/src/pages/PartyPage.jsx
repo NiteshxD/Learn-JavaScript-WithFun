@@ -4,7 +4,7 @@
 // Premium game UI matching the playful "Cut the Rope 2" design system.
 // =============================================================================
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Helmet } from "react-helmet-async";
@@ -24,10 +24,12 @@ const PartyPage = () => {
   const [selectedDifficulty, setSelectedDifficulty] = useState("");
   const [selectedCount, setSelectedCount] = useState(10);
 
-  // Navigate to lobby when room is ready
-  if (gameStatus === "waiting" && roomId) {
-    navigate("/lobby");
-  }
+  // Navigate to lobby when room is ready (via useEffect to avoid render-time setState)
+  useEffect(() => {
+    if (gameStatus === "waiting" && roomId) {
+      navigate("/lobby");
+    }
+  }, [gameStatus, roomId, navigate]);
 
   const handleCreate = () => {
     if (!username.trim() || !selectedDifficulty) return;

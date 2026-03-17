@@ -9,9 +9,13 @@
 
 import axios from "axios";
 
-// Base URL — Uses VITE_API_URL env var if set, otherwise falls back to deployed backend
-// In local dev with proxy: set VITE_API_URL=/api in a .env.local file
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://learn-javascript-withfun.onrender.com/api";
+// Base URL — Uses VITE_API_URL env var if set, otherwise auto-detect:
+//   - In development (localhost): use local backend at localhost:5000
+//   - In production: use deployed backend on Render
+const API_BASE_URL = import.meta.env.VITE_API_URL
+  || (import.meta.env.DEV
+    ? "http://localhost:5000/api"
+    : "https://learn-javascript-withfun.onrender.com/api");
 
 // Create an Axios instance with default config
 const api = axios.create({
