@@ -1,64 +1,66 @@
 /* =============================================================================
-   Modern Gaming UI — Design System
+   TailwindCSS v4 Entry + Custom Theme
    =============================================================================
-   Dark gradient theme with glassmorphism, neon accents, and smooth animations.
-   Inspired by modern gaming interfaces.
+   This file imports TailwindCSS v4 and defines the custom design tokens
+   for the playful "Cut the Rope 2" inspired game UI.
+   
+   COLOR PALETTE:
+     - Candy greens, warm oranges, bubbly purples, sky blues
+     - All designed to feel playful, vibrant, and game-like
    ============================================================================= */
 
 @import "tailwindcss";
 
-/* Google Fonts — Orbitron for headings (futuristic), Inter for body (clean) */
-@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap");
+/* Google Fonts — Boogaloo for headings (playful), Nunito for body (readable) */
+@import url("https://fonts.googleapis.com/css2?family=Boogaloo&family=Nunito:wght@400;600;700;800&display=swap");
 
 /* =============================================================================
    CSS Custom Properties (Design Tokens)
    ============================================================================= */
 :root {
-  /* ---- Neon Palette ---- */
-  --color-primary: #00ff88;
-  --color-primary-dark: #00cc6a;
-  --color-primary-light: #66ffb2;
-  --color-primary-glow: rgba(0, 255, 136, 0.4);
+  /* ---- Primary Palette (Candy Green) ---- */
+  --color-primary: #4ade80;
+  --color-primary-dark: #22c55e;
+  --color-primary-light: #86efac;
 
-  --color-secondary: #ff6b35;
-  --color-secondary-dark: #e55a2b;
-  --color-secondary-light: #ff8f66;
+  /* ---- Secondary Palette (Warm Orange) ---- */
+  --color-secondary: #fb923c;
+  --color-secondary-dark: #ea580c;
+  --color-secondary-light: #fdba74;
 
-  --color-accent: #a855f7;
+  /* ---- Accent Palette (Bubbly Purple) ---- */
+  --color-accent: #a78bfa;
   --color-accent-dark: #7c3aed;
-  --color-accent-light: #c084fc;
+  --color-accent-light: #c4b5fd;
 
-  --color-sky: #00d4ff;
-  --color-sky-dark: #00a8cc;
+  /* ---- Sky Blue ---- */
+  --color-sky: #38bdf8;
+  --color-sky-dark: #0284c7;
 
-  --color-pink: #ff2d87;
-  --color-danger: #ff3b3b;
-  --color-danger-light: #ff6b6b;
+  /* ---- Pink / Danger ---- */
+  --color-pink: #f472b6;
+  --color-danger: #ef4444;
+  --color-danger-light: #fca5a5;
 
-  --color-gold: #ffd700;
-
-  /* ---- Dark Theme (Default) ---- */
-  --bg-primary: #0a0e1a;
-  --bg-secondary: #111827;
-  --bg-card: rgba(17, 24, 39, 0.8);
-  --bg-glass: rgba(255, 255, 255, 0.03);
-  --text-primary: #f0f4ff;
-  --text-secondary: #94a3b8;
-  --text-muted: #4b5563;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-glow: rgba(0, 255, 136, 0.15);
+  /* ---- Light Theme ---- */
+  --bg-primary: #fefce8;
+  --bg-secondary: #fff7ed;
+  --bg-card: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
 
   /* ---- Typography ---- */
-  --font-heading: "Orbitron", sans-serif;
-  --font-body: "Inter", sans-serif;
+  --font-heading: "Boogaloo", cursive;
+  --font-body: "Nunito", sans-serif;
 
   /* ---- Shadows ---- */
-  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  --shadow-button: 0 4px 20px rgba(0, 0, 0, 0.3);
-  --shadow-glow-green: 0 0 30px rgba(0, 255, 136, 0.3), 0 0 60px rgba(0, 255, 136, 0.1);
-  --shadow-glow-orange: 0 0 30px rgba(255, 107, 53, 0.3), 0 0 60px rgba(255, 107, 53, 0.1);
-  --shadow-glow-purple: 0 0 30px rgba(168, 85, 247, 0.3), 0 0 60px rgba(168, 85, 247, 0.1);
-  --shadow-glow-cyan: 0 0 30px rgba(0, 212, 255, 0.3), 0 0 60px rgba(0, 212, 255, 0.1);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-button: 0 4px 14px rgba(0, 0, 0, 0.15);
+  --shadow-glow-green: 0 0 20px rgba(74, 222, 128, 0.4);
+  --shadow-glow-orange: 0 0 20px rgba(251, 146, 60, 0.4);
+  --shadow-glow-purple: 0 0 20px rgba(167, 139, 250, 0.4);
 
   /* ---- Border Radius ---- */
   --radius-sm: 8px;
@@ -69,19 +71,17 @@
 }
 
 /* =============================================================================
-   Light Theme
+   Dark Theme
    ============================================================================= */
-[data-theme="light"] {
-  --bg-primary: #f0f4ff;
-  --bg-secondary: #e2e8f0;
-  --bg-card: rgba(255, 255, 255, 0.85);
-  --bg-glass: rgba(255, 255, 255, 0.6);
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  --border-color: rgba(0, 0, 0, 0.08);
-  --border-glow: rgba(0, 200, 100, 0.2);
-  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+  --border-color: #334155;
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 /* =============================================================================
@@ -102,17 +102,17 @@ body {
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
-  transition: background-color 0.4s ease, color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
   overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
 /* =============================================================================
-   Animated Background Pattern — Deep space gradient + particles
+   Animated Background Pattern
    ============================================================================= */
 .bg-pattern {
   position: fixed;
@@ -120,17 +120,16 @@ h1, h2, h3, h4, h5, h6 {
   left: 0;
   width: 100%;
   height: 100%;
-  background:
-    radial-gradient(ellipse at 20% 0%, rgba(0, 255, 136, 0.07) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(168, 85, 247, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 100%, rgba(0, 212, 255, 0.05) 0%, transparent 50%),
-    radial-gradient(ellipse at 0% 80%, rgba(255, 45, 135, 0.04) 0%, transparent 50%);
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(74, 222, 128, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(251, 146, 60, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(167, 139, 250, 0.06) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
 }
 
 /* =============================================================================
-   Glassmorphism Button Styles
+   Playful Button Styles
    ============================================================================= */
 .btn-game {
   display: inline-flex;
@@ -141,29 +140,13 @@ h1, h2, h3, h4, h5, h6 {
   border: none;
   border-radius: var(--radius-xl);
   font-family: var(--font-heading);
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  font-size: 1.2rem;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   box-shadow: var(--shadow-button);
   position: relative;
   overflow: hidden;
   text-decoration: none;
-  text-transform: uppercase;
-}
-
-.btn-game::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.btn-game:hover::before {
-  opacity: 1;
 }
 
 .btn-game:hover {
@@ -174,15 +157,9 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateY(0) scale(0.98);
 }
 
-.btn-game:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  transform: none;
-}
-
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
-  color: #0a0e1a;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
 }
 
 .btn-primary:hover {
@@ -190,7 +167,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-secondary {
-  background: linear-gradient(135deg, var(--color-secondary-dark), var(--color-secondary));
+  background: linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark));
   color: #fff;
 }
 
@@ -199,7 +176,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-accent {
-  background: linear-gradient(135deg, var(--color-accent-dark), var(--color-accent));
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-dark));
   color: #fff;
 }
 
@@ -208,30 +185,27 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* =============================================================================
-   Glass Card Component
+   Card Component (reusable)
    ============================================================================= */
 .game-card {
   background: var(--bg-card);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border-radius: var(--radius-lg);
   padding: 24px;
   box-shadow: var(--shadow-card);
-  border: 1px solid var(--border-color);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid var(--border-color);
+  transition: all 0.3s ease;
 }
 
 .game-card:hover {
-  border-color: var(--border-glow);
+  border-color: var(--color-primary-light);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-card), 0 0 20px rgba(0, 255, 136, 0.05);
 }
 
 /* =============================================================================
    Scrollbar Styling
    ============================================================================= */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -239,7 +213,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--color-primary), var(--color-accent));
+  background: var(--color-primary);
   border-radius: var(--radius-full);
 }
 
@@ -252,8 +226,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 5px var(--color-primary-glow); }
-  50% { box-shadow: 0 0 30px var(--color-primary-glow), 0 0 60px var(--color-primary-glow); }
+  0%, 100% { box-shadow: 0 0 5px rgba(74, 222, 128, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(74, 222, 128, 0.6); }
 }
 
 @keyframes shake {
@@ -267,37 +241,10 @@ h1, h2, h3, h4, h5, h6 {
   100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
 
-@keyframes neon-flicker {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.85; }
-}
-
-@keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
 
 .animate-shake {
   animation: shake 0.5s ease-in-out;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* =============================================================================
-   Responsive Utilities
-   ============================================================================= */
-@media (max-width: 768px) {
-  .desktop-nav { display: none !important; }
-  .mobile-nav-btn { display: block !important; }
-}
-
-@media (min-width: 769px) {
-  .mobile-menu { display: none !important; }
 }

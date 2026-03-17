@@ -1,5 +1,8 @@
 // =============================================================================
-// Multiplayer Quiz Page — Server-Synced Gaming Screen
+// Multiplayer Quiz Page — Server-Synced Game Screen
+// =============================================================================
+// Premium game UI with server-controlled timer, live rank indicator,
+// answer feedback, and smooth question transitions.
 // =============================================================================
 
 import { useState, useEffect } from "react";
@@ -10,11 +13,11 @@ import { useParty } from "../context/PartyContext";
 import ProgressBar from "../components/ProgressBar";
 import useSound from "../hooks/useSound";
 
-const optionColors = [
-  { gradient: "linear-gradient(135deg, #00ff88, #00cc6a)", glow: "var(--shadow-glow-green)" },
-  { gradient: "linear-gradient(135deg, #00d4ff, #00a8cc)", glow: "var(--shadow-glow-cyan)" },
-  { gradient: "linear-gradient(135deg, #ff6b35, #e55a2b)", glow: "var(--shadow-glow-orange)" },
-  { gradient: "linear-gradient(135deg, #a855f7, #7c3aed)", glow: "var(--shadow-glow-purple)" },
+const optionGradients = [
+  "linear-gradient(135deg, #4ade80, #22c55e)", // A — Green
+  "linear-gradient(135deg, #38bdf8, #0284c7)", // B — Blue
+  "linear-gradient(135deg, #fb923c, #ea580c)", // C — Orange
+  "linear-gradient(135deg, #a78bfa, #7c3aed)", // D — Purple
 ];
 
 const MultiplayerQuizPage = () => {
@@ -28,9 +31,19 @@ const MultiplayerQuizPage = () => {
 
   const [timeLeft, setTimeLeft] = useState(timeLimit);
 
-  useEffect(() => { if (!roomId) navigate("/party"); }, [roomId, navigate]);
-  useEffect(() => { if (gameStatus === "finished" && finalResults) navigate("/party-result"); }, [gameStatus, finalResults, navigate]);
+  // Redirect if not in game
+  useEffect(() => {
+    if (!roomId) navigate("/party");
+  }, [roomId, navigate]);
 
+  // Navigate to results when game finishes
+  useEffect(() => {
+    if (gameStatus === "finished" && finalResults) {
+      navigate("/party-result");
+    }
+  }, [gameStatus, finalResults, navigate]);
+
+  // Client-side timer display (server enforces the actual deadline)
   useEffect(() => {
     if (!questionStartTime || !timeLimit) return;
     const interval = setInterval(() => {
@@ -42,8 +55,11 @@ const MultiplayerQuizPage = () => {
 
   useEffect(() => { setTimeLeft(timeLimit); }, [questionIndex, timeLimit]);
 
+  // Sound feedback
   useEffect(() => {
-    if (answerResult) answerResult.correct ? playCorrect() : playWrong();
+    if (answerResult) {
+      answerResult.correct ? playCorrect() : playWrong();
+    }
   }, [answerResult]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const myRank = scoreboard.findIndex((p) => p.score === myScore) + 1 || "—";
@@ -57,7 +73,13 @@ const MultiplayerQuizPage = () => {
     return (
       <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div className="bg-pattern" />
-        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }} style={{ fontSize: "3rem" }}>⏳</motion.div>
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+          style={{ fontSize: "3rem" }}
+        >
+          ⏳
+        </motion.div>
       </main>
     );
   }
@@ -68,43 +90,123 @@ const MultiplayerQuizPage = () => {
 
   return (
     <>
-      <Helmet><title>{`Q${questionIndex + 1}/${totalQuestions} — Party Quiz`}</title></Helmet>
-      <main style={{ minHeight: "calc(100vh - 64px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 20px", position: "relative" }}>
-        <div className="bg-pattern" />
-        <div style={{ maxWidth: "700px", width: "100%", position: "relative", zIndex: 1 }}>
+      <Helmet>
+        <title>{`Q${questionIndex + 1}/${totalQuestions} — Party Quiz`}</title>
+      </Helmet>
 
-          {/* Top Status */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", gap: "10px" }}>
-            {/* Timer */}
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: "10px", padding: "10px 22px",
-              borderRadius: "var(--radius-full)", background: "var(--bg-card)", backdropFilter: "blur(12px)",
-              border: `2px solid ${timerColor}`, boxShadow: timerPercent < 25 ? "0 0 20px rgba(255,59,59,0.3)" : "var(--shadow-card)",
-              fontFamily: "var(--font-heading)", fontSize: "1rem", fontWeight: 800, letterSpacing: "1px",
-              color: timerColor, fontVariantNumeric: "tabular-nums", minWidth: "100px", justifyContent: "center", transition: "all 0.3s",
-            }}>
+      <main
+        style={{
+          minHeight: "calc(100vh - 64px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "24px 20px",
+          position: "relative",
+        }}
+      >
+        <div className="bg-pattern" />
+
+        <div
+          style={{
+            maxWidth: "700px",
+            width: "100%",
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          {/* ===== TOP STATUS BAR ===== */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "12px",
+              flexWrap: "wrap",
+              gap: "10px",
+            }}
+          >
+            {/* Timer circle */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "10px 22px",
+                borderRadius: "var(--radius-full)",
+                background: "var(--bg-card)",
+                border: `3px solid ${timerColor}`,
+                boxShadow: timerPercent < 25 ? "0 0 15px rgba(239, 68, 68, 0.3)" : "var(--shadow-card)",
+                fontFamily: "var(--font-heading)",
+                fontSize: "1.3rem",
+                color: timerColor,
+                fontVariantNumeric: "tabular-nums",
+                minWidth: "100px",
+                justifyContent: "center",
+                transition: "all 0.3s",
+              }}
+            >
               ⏱️ {Math.ceil(timeLeft / 1000)}s
             </div>
 
-            {/* Rank + Score */}
+            {/* Score badges */}
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-              <span style={{ padding: "8px 16px", borderRadius: "var(--radius-full)", background: "rgba(255, 107, 53, 0.08)", border: "1px solid rgba(255, 107, 53, 0.2)", color: "var(--color-secondary)", fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "0.8rem", letterSpacing: "1px" }}>
+              <span
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "var(--radius-full)",
+                  background: "linear-gradient(135deg, rgba(251, 146, 60, 0.15), rgba(234, 88, 12, 0.08))",
+                  border: "2px solid var(--color-secondary)",
+                  color: "var(--color-secondary)",
+                  fontFamily: "var(--font-heading)",
+                  fontWeight: 700,
+                  fontSize: "1rem",
+                }}
+              >
                 🏆 #{myRank}
               </span>
-              <span style={{ padding: "8px 16px", borderRadius: "var(--radius-full)", background: "rgba(0, 255, 136, 0.08)", border: "1px solid rgba(0, 255, 136, 0.15)", color: "var(--color-primary)", fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "0.8rem", letterSpacing: "1px" }}>
+              <span
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "var(--radius-full)",
+                  background: "linear-gradient(135deg, rgba(74, 222, 128, 0.15), rgba(34, 197, 94, 0.08))",
+                  border: "2px solid var(--color-primary)",
+                  color: "var(--color-primary)",
+                  fontFamily: "var(--font-heading)",
+                  fontWeight: 700,
+                  fontSize: "1rem",
+                }}
+              >
                 ⭐ {myScore}/{questionIndex + 1}
               </span>
             </div>
           </div>
 
           {/* Timer Bar */}
-          <div style={{ height: "6px", borderRadius: "var(--radius-full)", background: "var(--bg-secondary)", marginBottom: "16px", overflow: "hidden", border: "1px solid var(--border-color)" }}>
-            <div style={{ height: "100%", borderRadius: "var(--radius-full)", background: `linear-gradient(90deg, ${timerColor}, var(--color-sky))`, width: `${timerPercent}%`, transition: "width 0.05s linear", boxShadow: `0 0 10px ${timerColor}` }} />
+          <div
+            style={{
+              height: "8px",
+              borderRadius: "var(--radius-full)",
+              background: "var(--bg-secondary)",
+              marginBottom: "16px",
+              overflow: "hidden",
+              border: "1px solid var(--border-color)",
+            }}
+          >
+            <motion.div
+              style={{
+                height: "100%",
+                borderRadius: "var(--radius-full)",
+                background: `linear-gradient(90deg, ${timerColor}, ${timerPercent < 25 ? "var(--color-danger-light)" : "var(--color-sky)"})`,
+                width: `${timerPercent}%`,
+                transition: "width 0.05s linear",
+              }}
+            />
           </div>
 
+          {/* Progress */}
           <ProgressBar current={questionIndex} total={totalQuestions} />
 
-          {/* Question */}
+          {/* ===== QUESTION CARD ===== */}
           <AnimatePresence mode="wait">
             <motion.div
               key={questionIndex}
@@ -113,19 +215,48 @@ const MultiplayerQuizPage = () => {
               exit={{ opacity: 0, x: -60, scale: 0.95 }}
               transition={{ duration: 0.3, type: "spring", stiffness: 200 }}
             >
+              {/* Category badge */}
               <div style={{ marginBottom: "12px" }}>
-                <span style={{ padding: "6px 16px", borderRadius: "var(--radius-full)", background: "linear-gradient(135deg, var(--color-accent), var(--color-pink))", color: "#fff", fontSize: "0.65rem", fontWeight: 700, fontFamily: "var(--font-heading)", letterSpacing: "1px", textTransform: "uppercase" }}>
+                <span
+                  style={{
+                    padding: "6px 16px",
+                    borderRadius: "var(--radius-full)",
+                    background: "linear-gradient(135deg, var(--color-accent-light), var(--color-accent))",
+                    color: "#fff",
+                    fontSize: "0.8rem",
+                    fontWeight: 800,
+                    fontFamily: "var(--font-body)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
                   {currentQuestion.category}
                 </span>
               </div>
 
-              <div className="game-card" style={{ marginBottom: "20px", padding: "28px", borderColor: "rgba(0, 212, 255, 0.1)", background: "linear-gradient(135deg, var(--bg-card), rgba(0, 212, 255, 0.02))" }}>
-                <h2 style={{ fontFamily: "var(--font-body)", fontSize: "1.1rem", fontWeight: 700, lineHeight: 1.6, color: "var(--text-primary)" }}>
+              {/* Question text */}
+              <div
+                className="game-card"
+                style={{
+                  marginBottom: "20px",
+                  padding: "28px",
+                  borderColor: "var(--color-sky)",
+                  background: "linear-gradient(135deg, var(--bg-card), var(--bg-secondary))",
+                }}
+              >
+                <h2
+                  style={{
+                    fontFamily: "var(--font-heading)",
+                    fontSize: "1.35rem",
+                    lineHeight: 1.5,
+                    color: "var(--text-primary)",
+                  }}
+                >
                   {currentQuestion.question}
                 </h2>
               </div>
 
-              {/* Options 2×2 */}
+              {/* ===== OPTIONS ===== */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 {currentQuestion.options.map((option, idx) => {
                   const isSelected = selectedAnswer === option;
@@ -141,24 +272,56 @@ const MultiplayerQuizPage = () => {
                       onClick={() => handleAnswer(option)}
                       disabled={selectedAnswer !== null}
                       style={{
-                        padding: "16px 14px", borderRadius: "var(--radius-lg)",
-                        border: isCorrect ? "2px solid var(--color-primary)" : isWrong ? "2px solid var(--color-danger)" : "1px solid var(--border-color)",
-                        background: isCorrect ? "rgba(0, 255, 136, 0.08)" : isWrong ? "rgba(255, 59, 59, 0.08)" : "var(--bg-card)",
-                        backdropFilter: "blur(12px)",
-                        color: "var(--text-primary)", fontSize: "0.9rem", fontWeight: 700, fontFamily: "var(--font-body)",
-                        cursor: selectedAnswer !== null ? "default" : "pointer", textAlign: "left",
+                        padding: "16px 14px",
+                        borderRadius: "var(--radius-lg)",
+                        border: isCorrect
+                          ? "3px solid var(--color-primary)"
+                          : isWrong
+                          ? "3px solid var(--color-danger)"
+                          : isSelected
+                          ? "3px solid var(--color-sky)"
+                          : "2px solid var(--border-color)",
+                        background: isCorrect
+                          ? "linear-gradient(135deg, rgba(74, 222, 128, 0.15), rgba(34, 197, 94, 0.10))"
+                          : isWrong
+                          ? "linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.08))"
+                          : "var(--bg-card)",
+                        color: "var(--text-primary)",
+                        fontSize: "0.95rem",
+                        fontWeight: 700,
+                        fontFamily: "var(--font-body)",
+                        cursor: selectedAnswer !== null ? "default" : "pointer",
+                        textAlign: "left",
                         transition: "all 0.2s ease",
-                        boxShadow: isCorrect ? "var(--shadow-glow-green)" : isWrong ? "0 0 20px rgba(255,59,59,0.2)" : "var(--shadow-card)",
-                        opacity: isRevealed && !isCorrect && !isSelected ? 0.3 : 1,
+                        boxShadow: isCorrect
+                          ? "var(--shadow-glow-green)"
+                          : isWrong
+                          ? "0 0 15px rgba(239, 68, 68, 0.3)"
+                          : "var(--shadow-card)",
+                        opacity: isRevealed && !isCorrect && !isSelected ? 0.4 : 1,
                       }}
                     >
                       <span style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        <span style={{
-                          display: "inline-flex", alignItems: "center", justifyContent: "center",
-                          width: "34px", height: "34px", borderRadius: "var(--radius-full)",
-                          background: isCorrect ? "var(--color-primary)" : isWrong ? "var(--color-danger)" : optionColors[idx].gradient,
-                          color: "#fff", fontWeight: 800, fontSize: "0.8rem", fontFamily: "var(--font-heading)", flexShrink: 0,
-                        }}>
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: "34px",
+                            height: "34px",
+                            borderRadius: "var(--radius-full)",
+                            background: isCorrect || isWrong
+                              ? isCorrect
+                                ? "var(--color-primary)"
+                                : "var(--color-danger)"
+                              : optionGradients[idx],
+                            color: "#fff",
+                            fontWeight: 800,
+                            fontSize: "0.85rem",
+                            fontFamily: "var(--font-heading)",
+                            flexShrink: 0,
+                          }}
+                        >
                           {isCorrect ? "✓" : isWrong ? "✗" : optionLabels[idx]}
                         </span>
                         <span style={{ lineHeight: 1.4 }}>{option}</span>
@@ -168,11 +331,22 @@ const MultiplayerQuizPage = () => {
                 })}
               </div>
 
+              {/* Answer feedback */}
               <AnimatePresence>
                 {answerResult && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                    style={{ textAlign: "center", marginTop: "20px", fontFamily: "var(--font-heading)", fontSize: "0.9rem", letterSpacing: "2px", color: answerResult.correct ? "var(--color-primary)" : "var(--color-danger)", textShadow: answerResult.correct ? "0 0 20px rgba(0,255,136,0.5)" : "0 0 20px rgba(255,59,59,0.5)" }}>
-                    {answerResult.correct ? "✅ CORRECT!" : "❌ WRONG!"}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    style={{
+                      textAlign: "center",
+                      marginTop: "20px",
+                      fontFamily: "var(--font-heading)",
+                      fontSize: "1.4rem",
+                      color: answerResult.correct ? "var(--color-primary)" : "var(--color-danger)",
+                    }}
+                  >
+                    {answerResult.correct ? "✅ Correct!" : "❌ Wrong!"}
                   </motion.div>
                 )}
               </AnimatePresence>

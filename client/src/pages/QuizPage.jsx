@@ -1,5 +1,20 @@
 // =============================================================================
-// Quiz Page — Immersive Game Screen
+// Quiz Page — Main Game Screen
+// =============================================================================
+// The core gameplay page. Displays one question at a time with:
+//   - Question card with animated entry/exit
+//   - 4 option buttons with correct/wrong feedback
+//   - Progress bar showing current question number
+//   - Running timer
+//   - Streak badge for consecutive correct answers
+//   - Sound effects on answer selection
+//
+// GAME FLOW:
+//   1. Question appears with animation
+//   2. User selects an option
+//   3. Correct/wrong feedback shows for 800ms
+//   4. Auto-advances to next question
+//   5. After question 50, redirects to /result
 // =============================================================================
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -13,52 +28,77 @@ import StreakBadge from "../components/StreakBadge";
 import useTimer from "../hooks/useTimer";
 import useSound from "../hooks/useSound";
 
-const optionColors = [
-  { bg: "rgba(0, 255, 136, 0.06)", border: "var(--color-primary)", glow: "var(--shadow-glow-green)" },
-  { bg: "rgba(0, 212, 255, 0.06)", border: "var(--color-sky)", glow: "var(--shadow-glow-cyan)" },
-  { bg: "rgba(255, 107, 53, 0.06)", border: "var(--color-secondary)", glow: "var(--shadow-glow-orange)" },
-  { bg: "rgba(168, 85, 247, 0.06)", border: "var(--color-accent)", glow: "var(--shadow-glow-purple)" },
-];
-
 const QuizPage = () => {
   const navigate = useNavigate();
   const {
-    currentQuestion, currentIndex, totalQuestions, streak,
-    isQuizActive, isQuizComplete, answerQuestion, setTimeTaken, username,
+    currentQuestion,
+    currentIndex,
+    totalQuestions,
+    streak,
+    isQuizActive,
+    isQuizComplete,
+    answerQuestion,
+    setTimeTaken,
+    username,
   } = useQuizContext();
 
   const { elapsedMs, start, stop } = useTimer();
   const { playCorrect, playWrong } = useSound();
 
+  // Local state for answer feedback animation
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isCorrect, setIsCorrect] = useState(null);
-  const [isLocked, setIsLocked] = useState(false);
+  const [isLocked, setIsLocked] = useState(false); // Prevent double-clicks
 
+  // Keep a ref to the latest elapsedMs value so we can read it on completion
+  // without adding 'elapsedMs' to the useEffect dependency array
   const elapsedMsRef = useRef(elapsedMs);
   elapsedMsRef.current = elapsedMs;
 
-  useEffect(() => { if (isQuizActive) start(); }, [isQuizActive, start]);
+  // Start timer when quiz begins
+  useEffect(() => {
+    if (isQuizActive) {
+      start();
+    }
+  }, [isQuizActive, start]);
 
+  // Handle quiz completion — stop timer and navigate to results
   useEffect(() => {
     if (isQuizComplete) {
       stop();
       setTimeTaken(elapsedMsRef.current);
+      // Small delay to ensure state propagates before navigation
       setTimeout(() => navigate("/result"), 50);
     }
   }, [isQuizComplete, stop, setTimeTaken, navigate]);
 
+  // Redirect if user lands on this page without starting a quiz
   useEffect(() => {
-    if (!isQuizActive && !isQuizComplete && !currentQuestion) navigate("/");
+    if (!isQuizActive && !isQuizComplete && !currentQuestion) {
+      navigate("/");
+    }
   }, [isQuizActive, isQuizComplete, currentQuestion, navigate]);
 
+  /**
+   * Handle option click — show feedback, play sound, advance
+   */
   const handleAnswer = useCallback(
     (answer) => {
-      if (isLocked) return;
+      if (isLocked) return; // Prevent multiple clicks during feedback
       setIsLocked(true);
+
       const correct = answer === currentQuestion.correctAnswer;
       setSelectedAnswer(answer);
       setIsCorrect(correct);
-      correct ? playCorrect() : playWrong();
+
+      // Play sound effect
+      if (correct) {
+        playCorrect();
+      } else {
+        playWrong();
+      }
+
+      // Show feedback for 800ms, then advance to next question
       setTimeout(() => {
         answerQuestion(answer);
         setSelectedAnswer(null);
@@ -69,56 +109,75 @@ const QuizPage = () => {
     [isLocked, currentQuestion, answerQuestion, playCorrect, playWrong]
   );
 
+  // Don't render if no question loaded yet
   if (!currentQuestion) return null;
 
-  const optionLabels = ["A", "B", "C", "D"];
-
-  const getOptionStyle = (option, idx) => {
-    const oc = optionColors[idx];
-    const base = {
+  /**
+   * Get the style for an option button based on current feedback state
+   */
+  const getOptionStyle = (option) => {
+    const baseStyle = {
       width: "100%",
-      padding: "18px 20px",
+      padding: "16px 20px",
       borderRadius: "var(--radius-md)",
-      border: "1px solid var(--border-color)",
+      border: "2px solid var(--border-color)",
       background: "var(--bg-card)",
-      backdropFilter: "blur(12px)",
       color: "var(--text-primary)",
-      fontSize: "0.95rem",
+      fontSize: "1rem",
       fontWeight: 600,
       fontFamily: "var(--font-body)",
       cursor: isLocked ? "default" : "pointer",
       textAlign: "left",
-      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+      transition: "all 0.2s ease",
       boxShadow: "var(--shadow-card)",
     };
 
-    if (selectedAnswer === null) return base;
+    if (selectedAnswer === null) return baseStyle;
 
+    // Show feedback colors after selection
     if (option === currentQuestion.correctAnswer) {
-      return { ...base, border: "2px solid var(--color-primary)", background: "rgba(0, 255, 136, 0.1)", boxShadow: "var(--shadow-glow-green)" };
+      return {
+        ...baseStyle,
+        border: "2px solid var(--color-primary)",
+        background: "rgba(74, 222, 128, 0.15)",
+        color: "var(--color-primary-dark)",
+      };
     }
+
     if (option === selectedAnswer && !isCorrect) {
-      return { ...base, border: "2px solid var(--color-danger)", background: "rgba(255, 59, 59, 0.1)", boxShadow: "0 0 20px rgba(255, 59, 59, 0.2)" };
+      return {
+        ...baseStyle,
+        border: "2px solid var(--color-danger)",
+        background: "rgba(239, 68, 68, 0.15)",
+        color: "var(--color-danger)",
+      };
     }
-    return { ...base, opacity: 0.3 };
+
+    return { ...baseStyle, opacity: 0.5 };
   };
+
+  // Option labels (A, B, C, D)
+  const optionLabels = ["A", "B", "C", "D"];
 
   return (
     <>
-      <Helmet><title>Quiz in Progress — JS Quiz Challenge</title></Helmet>
+      <Helmet>
+        <title>Quiz in Progress — JS Quiz Challenge</title>
+      </Helmet>
+
       <main
         style={{
           minHeight: "calc(100vh - 64px)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
           padding: "24px 20px",
+          maxWidth: "720px",
+          margin: "0 auto",
           position: "relative",
         }}
       >
         <div className="bg-pattern" />
-        <div style={{ maxWidth: "720px", width: "100%", position: "relative", zIndex: 1 }}>
-          {/* Top Bar */}
+
+        <div style={{ position: "relative", zIndex: 1 }}>
+          {/* Top Bar: Timer + Streak */}
           <div
             style={{
               display: "flex",
@@ -133,55 +192,61 @@ const QuizPage = () => {
             <StreakBadge streak={streak} />
           </div>
 
+          {/* Progress Bar */}
           <ProgressBar current={currentIndex} total={totalQuestions} />
 
-          {/* Question */}
+          {/* Question Card */}
           <AnimatePresence mode="wait">
             <motion.div
-              key={currentIndex}
-              initial={{ opacity: 0, x: 60, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -60, scale: 0.95 }}
-              transition={{ duration: 0.3, type: "spring", stiffness: 200 }}
+              key={currentIndex} // Re-animate on each new question
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.3 }}
             >
-              {/* Category + Username */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+              {/* Category Badge */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "12px",
+                }}
+              >
                 <span
                   style={{
-                    padding: "6px 16px",
+                    padding: "4px 14px",
                     borderRadius: "var(--radius-full)",
-                    background: "linear-gradient(135deg, var(--color-accent), var(--color-pink))",
+                    background: "linear-gradient(135deg, var(--color-accent-light), var(--color-accent))",
                     color: "#fff",
-                    fontSize: "0.7rem",
+                    fontSize: "0.8rem",
                     fontWeight: 700,
-                    fontFamily: "var(--font-heading)",
-                    letterSpacing: "1px",
-                    textTransform: "uppercase",
+                    fontFamily: "var(--font-body)",
                   }}
                 >
                   {currentQuestion.category}
                 </span>
-                <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", fontWeight: 600 }}>
+                <span
+                  style={{
+                    fontSize: "0.85rem",
+                    color: "var(--text-muted)",
+                    fontWeight: 600,
+                  }}
+                >
                   👤 {username}
                 </span>
               </div>
 
-              {/* Question Card */}
+              {/* Question Text */}
               <div
                 className="game-card"
-                style={{
-                  marginBottom: "20px",
-                  padding: "32px",
-                  borderColor: "rgba(0, 212, 255, 0.15)",
-                  background: "linear-gradient(135deg, var(--bg-card), rgba(0, 212, 255, 0.03))",
-                }}
+                style={{ marginBottom: "20px", padding: "28px" }}
               >
                 <h2
                   style={{
-                    fontFamily: "var(--font-body)",
-                    fontSize: "1.15rem",
-                    fontWeight: 700,
-                    lineHeight: 1.6,
+                    fontFamily: "var(--font-heading)",
+                    fontSize: "1.3rem",
+                    lineHeight: 1.5,
                     color: "var(--text-primary)",
                   }}
                 >
@@ -189,37 +254,60 @@ const QuizPage = () => {
                 </h2>
               </div>
 
-              {/* Options — 2×2 grid */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              {/* Options Grid */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr",
+                  gap: "12px",
+                }}
+              >
                 {currentQuestion.options.map((option, index) => (
                   <motion.button
                     key={option}
-                    whileHover={!isLocked ? { scale: 1.03, y: -3 } : {}}
-                    whileTap={!isLocked ? { scale: 0.97 } : {}}
+                    whileHover={!isLocked ? { scale: 1.02 } : {}}
+                    whileTap={!isLocked ? { scale: 0.98 } : {}}
                     onClick={() => handleAnswer(option)}
                     disabled={isLocked}
-                    style={getOptionStyle(option, index)}
-                    className={selectedAnswer && option === selectedAnswer && !isCorrect ? "animate-shake" : ""}
+                    style={getOptionStyle(option)}
+                    className={
+                      selectedAnswer &&
+                      option === selectedAnswer &&
+                      !isCorrect
+                        ? "animate-shake"
+                        : ""
+                    }
                   >
-                    <span style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "12px",
+                      }}
+                    >
                       <span
                         style={{
                           display: "inline-flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          width: "34px",
-                          height: "34px",
+                          width: "32px",
+                          height: "32px",
                           borderRadius: "var(--radius-full)",
-                          background: selectedAnswer === null
-                            ? `linear-gradient(135deg, ${optionColors[index].border}, ${optionColors[index].border}88)`
-                            : option === currentQuestion.correctAnswer
-                            ? "var(--color-primary)"
-                            : option === selectedAnswer
-                            ? "var(--color-danger)"
-                            : "var(--bg-secondary)",
-                          color: "#fff",
+                          background:
+                            selectedAnswer === null
+                              ? "var(--bg-secondary)"
+                              : option === currentQuestion.correctAnswer
+                              ? "var(--color-primary)"
+                              : option === selectedAnswer
+                              ? "var(--color-danger)"
+                              : "var(--bg-secondary)",
+                          color:
+                            selectedAnswer !== null &&
+                            (option === currentQuestion.correctAnswer || option === selectedAnswer)
+                              ? "#fff"
+                              : "var(--text-secondary)",
                           fontWeight: 800,
-                          fontSize: "0.8rem",
+                          fontSize: "0.85rem",
                           fontFamily: "var(--font-heading)",
                           flexShrink: 0,
                         }}
@@ -232,30 +320,28 @@ const QuizPage = () => {
                             : optionLabels[index]
                           : optionLabels[index]}
                       </span>
-                      <span style={{ lineHeight: 1.4 }}>{option}</span>
+                      <span>{option}</span>
                     </span>
                   </motion.button>
                 ))}
               </div>
 
-              {/* Feedback */}
+              {/* Feedback Message */}
               <AnimatePresence>
                 {selectedAnswer && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
                     style={{
                       textAlign: "center",
-                      marginTop: "20px",
+                      marginTop: "16px",
                       fontFamily: "var(--font-heading)",
-                      fontSize: "1rem",
-                      letterSpacing: "1px",
+                      fontSize: "1.2rem",
                       color: isCorrect ? "var(--color-primary)" : "var(--color-danger)",
-                      textShadow: isCorrect ? "0 0 20px rgba(0,255,136,0.5)" : "0 0 20px rgba(255,59,59,0.5)",
                     }}
                   >
-                    {isCorrect ? "✅ CORRECT!" : "❌ WRONG!"}
+                    {isCorrect ? "✅ Correct! Great job!" : "❌ Wrong! Keep going!"}
                   </motion.div>
                 )}
               </AnimatePresence>

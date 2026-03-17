@@ -1,5 +1,8 @@
 // =============================================================================
-// Navbar — Futuristic Gaming Navigation
+// Navbar Component
+// =============================================================================
+// Site-wide navigation with playful game-inspired styling.
+// Includes dark mode toggle and responsive mobile menu.
 // =============================================================================
 
 import { useState } from "react";
@@ -19,10 +22,11 @@ const Navbar = () => {
         position: "sticky",
         top: 0,
         zIndex: 50,
-        background: "rgba(10, 14, 26, 0.85)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        borderBottom: "1px solid var(--border-color)",
+        background: theme === "dark" 
+          ? "rgba(15, 23, 42, 0.9)" 
+          : "rgba(254, 252, 232, 0.9)",
+        backdropFilter: "blur(12px)",
+        borderBottom: `2px solid var(--border-color)`,
         padding: "0 24px",
       }}
     >
@@ -36,7 +40,7 @@ const Navbar = () => {
           height: "64px",
         }}
       >
-        {/* Logo */}
+        {/* Logo / Brand */}
         <Link to="/" style={{ textDecoration: "none" }}>
           <motion.div
             whileHover={{ scale: 1.05 }}
@@ -45,56 +49,48 @@ const Navbar = () => {
               alignItems: "center",
               gap: "10px",
               fontFamily: "var(--font-heading)",
-              fontSize: "1.1rem",
-              fontWeight: 800,
-              letterSpacing: "2px",
+              fontSize: "1.6rem",
+              color: "var(--color-primary)",
             }}
           >
-            <span style={{ fontSize: "1.6rem" }}>🎮</span>
-            <span
-              style={{
-                background: "linear-gradient(135deg, var(--color-primary), var(--color-sky))",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              JS QUIZ
-            </span>
+            <span style={{ fontSize: "1.8rem" }}>🎮</span>
+            <span>JS Quiz</span>
           </motion.div>
         </Link>
 
-        {/* Desktop Nav */}
+        {/* Desktop Nav Links */}
         <div
-          style={{ display: "flex", alignItems: "center", gap: "4px" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
           className="desktop-nav"
         >
-          {NAV_LINKS.map((link) => {
-            const isActive = location.pathname === link.path;
-            return (
-              <Link key={link.path} to={link.path} style={{ textDecoration: "none" }}>
-                <motion.div
-                  whileHover={{ scale: 1.05, y: -1 }}
-                  whileTap={{ scale: 0.95 }}
-                  style={{
-                    padding: "8px 16px",
-                    borderRadius: "var(--radius-full)",
-                    fontFamily: "var(--font-body)",
-                    fontWeight: 700,
-                    fontSize: "0.85rem",
-                    letterSpacing: "0.3px",
-                    color: isActive ? "#0a0e1a" : "var(--text-secondary)",
-                    background: isActive
-                      ? "linear-gradient(135deg, var(--color-primary), var(--color-primary-light))"
-                      : "transparent",
-                    boxShadow: isActive ? "var(--shadow-glow-green)" : "none",
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  {link.emoji} {link.label}
-                </motion.div>
-              </Link>
-            );
-          })}
+          {NAV_LINKS.map((link) => (
+            <Link key={link.path} to={link.path} style={{ textDecoration: "none" }}>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                style={{
+                  padding: "8px 18px",
+                  borderRadius: "var(--radius-full)",
+                  fontFamily: "var(--font-body)",
+                  fontWeight: 700,
+                  fontSize: "0.95rem",
+                  color: location.pathname === link.path
+                    ? "#fff"
+                    : "var(--text-secondary)",
+                  background: location.pathname === link.path
+                    ? "linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))"
+                    : "transparent",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                {link.emoji} {link.label}
+              </motion.div>
+            </Link>
+          ))}
 
           {/* Theme Toggle */}
           <motion.button
@@ -102,18 +98,17 @@ const Navbar = () => {
             whileTap={{ scale: 0.9 }}
             onClick={toggleTheme}
             style={{
-              background: "var(--bg-glass)",
-              border: "1px solid var(--border-color)",
+              background: "var(--bg-card)",
+              border: "2px solid var(--border-color)",
               borderRadius: "var(--radius-full)",
               width: "42px",
               height: "42px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "1.2rem",
+              fontSize: "1.3rem",
               cursor: "pointer",
               marginLeft: "8px",
-              backdropFilter: "blur(10px)",
             }}
             aria-label="Toggle dark mode"
           >
@@ -150,7 +145,6 @@ const Navbar = () => {
             style={{
               overflow: "hidden",
               paddingBottom: "16px",
-              borderTop: "1px solid var(--border-color)",
             }}
           >
             {NAV_LINKS.map((link) => (
@@ -194,6 +188,17 @@ const Navbar = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Responsive CSS */}
+      <style>{`
+        @media (max-width: 768px) {
+          .desktop-nav { display: none !important; }
+          .mobile-nav-btn { display: block !important; }
+        }
+        @media (min-width: 769px) {
+          .mobile-menu { display: none !important; }
+        }
+      `}</style>
     </nav>
   );
 };

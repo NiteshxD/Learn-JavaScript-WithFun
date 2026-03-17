@@ -1,5 +1,5 @@
 // =============================================================================
-// Footer — Minimal gaming footer
+// Footer Component
 // =============================================================================
 
 const Footer = () => {
@@ -8,19 +8,15 @@ const Footer = () => {
       style={{
         textAlign: "center",
         padding: "24px",
-        borderTop: "1px solid var(--border-color)",
+        borderTop: "2px solid var(--border-color)",
         color: "var(--text-muted)",
         fontFamily: "var(--font-body)",
-        fontSize: "0.85rem",
+        fontSize: "0.9rem",
         marginTop: "auto",
-        background: "rgba(10, 14, 26, 0.5)",
-        backdropFilter: "blur(10px)",
       }}
     >
-      <p style={{ fontWeight: 600 }}>
-        🎮 <span style={{ color: "var(--color-primary)", fontFamily: "var(--font-heading)", fontSize: "0.75rem", letterSpacing: "1px" }}>JS QUIZ CHALLENGE</span> — Built with MERN Stack
-      </p>
-      <p style={{ marginTop: "4px", fontSize: "0.75rem" }}>
+      <p>🎮 JavaScript Quiz Challenge — Built with MERN Stack</p>
+      <p style={{ marginTop: "4px", fontSize: "0.8rem" }}>
         Made with ❤️ for learning JavaScript
       </p>
     </footer>
