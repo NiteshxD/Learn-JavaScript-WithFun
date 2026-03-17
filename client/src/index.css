@@ -1,18 +1,12 @@
 /* =============================================================================
-   TailwindCSS v4 Entry + Custom Theme
+   Custom Theme — "Cut the Rope 2" Inspired Game UI
    =============================================================================
-   This file imports TailwindCSS v4 and defines the custom design tokens
-   for the playful "Cut the Rope 2" inspired game UI.
-   
    COLOR PALETTE:
      - Candy greens, warm oranges, bubbly purples, sky blues
      - All designed to feel playful, vibrant, and game-like
+
+   NOTE: Google Fonts (Boogaloo + Nunito) are loaded from index.html <head>
    ============================================================================= */
-
-@import "tailwindcss";
-
-/* Google Fonts — Boogaloo for headings (playful), Nunito for body (readable) */
-@import url("https://fonts.googleapis.com/css2?family=Boogaloo&family=Nunito:wght@400;600;700;800&display=swap");
 
 /* =============================================================================
    CSS Custom Properties (Design Tokens)
