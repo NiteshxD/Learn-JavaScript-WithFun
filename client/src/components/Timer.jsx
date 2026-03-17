@@ -1,16 +1,29 @@
 // =============================================================================
 // Timer Component
 // =============================================================================
-// Displays the elapsed time in MM:SS format with a clock emoji.
+// Displays the elapsed time in MM:SS.cc format (centiseconds / hundredths).
 // =============================================================================
 
-import { formatTime } from "../utils/helpers";
+/**
+ * Format milliseconds to MM:SS.cc string
+ */
+const formatTimerDisplay = (ms) => {
+  const totalSeconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  const centiseconds = Math.floor((ms % 1000) / 10); // hundredths of a second
+
+  const mm = String(minutes).padStart(2, "0");
+  const ss = String(seconds).padStart(2, "0");
+  const cc = String(centiseconds).padStart(2, "0");
+  return `${mm}:${ss}.${cc}`;
+};
 
 /**
  * @param {Object} props
- * @param {number} props.seconds - Elapsed seconds
+ * @param {number} props.elapsedMs - Elapsed milliseconds
  */
-const Timer = ({ seconds }) => {
+const Timer = ({ elapsedMs }) => {
   return (
     <div
       style={{
@@ -25,10 +38,12 @@ const Timer = ({ seconds }) => {
         fontSize: "1.1rem",
         color: "var(--text-primary)",
         boxShadow: "var(--shadow-card)",
+        minWidth: "160px",
+        fontVariantNumeric: "tabular-nums", // Prevents layout shift with changing digits
       }}
     >
       <span>⏱️</span>
-      <span>Time: {formatTime(seconds)}</span>
+      <span>{formatTimerDisplay(elapsedMs)}</span>
     </div>
   );
 };

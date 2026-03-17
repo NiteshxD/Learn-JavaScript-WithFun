@@ -42,7 +42,7 @@ const QuizPage = () => {
     username,
   } = useQuizContext();
 
-  const { seconds, start, stop } = useTimer();
+  const { elapsedMs, start, stop } = useTimer();
   const { playCorrect, playWrong } = useSound();
 
   // Local state for answer feedback animation
@@ -50,10 +50,10 @@ const QuizPage = () => {
   const [isCorrect, setIsCorrect] = useState(null);
   const [isLocked, setIsLocked] = useState(false); // Prevent double-clicks
 
-  // Keep a ref to the latest seconds value so we can read it on completion
-  // without adding 'seconds' to the useEffect dependency array
-  const secondsRef = useRef(seconds);
-  secondsRef.current = seconds;
+  // Keep a ref to the latest elapsedMs value so we can read it on completion
+  // without adding 'elapsedMs' to the useEffect dependency array
+  const elapsedMsRef = useRef(elapsedMs);
+  elapsedMsRef.current = elapsedMs;
 
   // Start timer when quiz begins
   useEffect(() => {
@@ -66,7 +66,7 @@ const QuizPage = () => {
   useEffect(() => {
     if (isQuizComplete) {
       stop();
-      setTimeTaken(secondsRef.current);
+      setTimeTaken(elapsedMsRef.current);
       // Small delay to ensure state propagates before navigation
       setTimeout(() => navigate("/result"), 50);
     }
@@ -188,7 +188,7 @@ const QuizPage = () => {
               gap: "10px",
             }}
           >
-            <Timer seconds={seconds} />
+            <Timer elapsedMs={elapsedMs} />
             <StreakBadge streak={streak} />
           </div>
 

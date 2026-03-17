@@ -6,26 +6,30 @@
 // =============================================================================
 
 /**
- * Formats seconds into MM:SS display string
- * @param {number} seconds - Total seconds elapsed
- * @returns {string} Formatted time string (e.g., "03:45")
+ * Formats milliseconds into MM:SS.cc display string
+ * @param {number} ms - Total milliseconds elapsed
+ * @returns {string} Formatted time string (e.g., "03:45.12")
  */
-export const formatTime = (seconds) => {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+export const formatTime = (ms) => {
+  const totalSeconds = Math.floor(ms / 1000);
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  const centis = Math.floor((ms % 1000) / 10);
+  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}.${String(centis).padStart(2, "0")}`;
 };
 
 /**
- * Formats seconds into a human-readable string
- * @param {number} seconds - Total seconds
- * @returns {string} e.g., "11m 30s"
+ * Formats milliseconds into a human-readable string
+ * @param {number} ms - Total milliseconds
+ * @returns {string} e.g., "1m 30.45s"
  */
-export const formatTimeReadable = (seconds) => {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  if (mins === 0) return `${secs}s`;
-  return `${mins}m ${secs}s`;
+export const formatTimeReadable = (ms) => {
+  const totalSeconds = Math.floor(ms / 1000);
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  const centis = Math.floor((ms % 1000) / 10);
+  if (mins === 0) return `${secs}.${String(centis).padStart(2, "0")}s`;
+  return `${mins}m ${secs}.${String(centis).padStart(2, "0")}s`;
 };
 
 /**
