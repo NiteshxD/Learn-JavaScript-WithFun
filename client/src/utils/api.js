@@ -9,9 +9,9 @@
 
 import axios from "axios";
 
-// Base URL — in development, Vite proxies /api to localhost:5000
-// In production, set VITE_API_URL to the deployed backend URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
+// Base URL — Uses VITE_API_URL env var if set, otherwise falls back to deployed backend
+// In local dev with proxy: set VITE_API_URL=/api in a .env.local file
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://learn-javascript-withfun.onrender.com/api";
 
 // Create an Axios instance with default config
 const api = axios.create({
