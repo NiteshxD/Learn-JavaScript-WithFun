@@ -1,8 +1,7 @@
 // =============================================================================
 // Party Result Page — End-of-Game Rankings
 // =============================================================================
-// Displays the final party leaderboard after all questions are answered.
-// Separate from the global leaderboard — only shows this room's results.
+// Premium podium-style results with animated rank reveals and celebration.
 // =============================================================================
 
 import { useEffect } from "react";
@@ -13,9 +12,30 @@ import { useParty } from "../context/PartyContext";
 import { formatTimeReadable } from "../utils/helpers";
 import useSound from "../hooks/useSound";
 
+const rankStyles = {
+  1: {
+    emoji: "🥇",
+    gradient: "linear-gradient(135deg, #fbbf24, #f59e0b)",
+    glow: "0 0 25px rgba(251, 191, 36, 0.4)",
+    size: "1.3rem",
+  },
+  2: {
+    emoji: "🥈",
+    gradient: "linear-gradient(135deg, #94a3b8, #64748b)",
+    glow: "0 0 15px rgba(148, 163, 184, 0.3)",
+    size: "1.15rem",
+  },
+  3: {
+    emoji: "🥉",
+    gradient: "linear-gradient(135deg, #f97316, #c2410c)",
+    glow: "0 0 15px rgba(249, 115, 22, 0.3)",
+    size: "1.1rem",
+  },
+};
+
 const PartyResultPage = () => {
   const navigate = useNavigate();
-  const { finalResults, roomId, leaveRoom, resetParty } = useParty();
+  const { finalResults, leaveRoom, resetParty } = useParty();
   const { playCelebration } = useSound();
 
   useEffect(() => {
@@ -41,13 +61,6 @@ const PartyResultPage = () => {
     navigate("/");
   };
 
-  const getRankEmoji = (rank) => {
-    if (rank === 1) return "🥇";
-    if (rank === 2) return "🥈";
-    if (rank === 3) return "🥉";
-    return `#${rank}`;
-  };
-
   return (
     <>
       <Helmet>
@@ -57,156 +70,212 @@ const PartyResultPage = () => {
       <main
         style={{
           minHeight: "calc(100vh - 64px)",
-          padding: "32px 20px",
-          maxWidth: "700px",
-          margin: "0 auto",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "40px 20px",
           position: "relative",
         }}
       >
         <div className="bg-pattern" />
-        <div style={{ position: "relative", zIndex: 1 }}>
-          {/* Winner Announcement */}
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          style={{
+            maxWidth: "650px",
+            width: "100%",
+            textAlign: "center",
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          {/* ===== WINNER ANNOUNCEMENT ===== */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
-            style={{ textAlign: "center", marginBottom: "32px" }}
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 200, damping: 12, delay: 0.2 }}
+            style={{ marginBottom: "28px" }}
           >
-            <div style={{ fontSize: "4rem", marginBottom: "8px" }}>🏆</div>
+            <motion.div
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              style={{
+                fontSize: "5rem",
+                marginBottom: "12px",
+                filter: "drop-shadow(0 4px 20px rgba(251, 191, 36, 0.4))",
+              }}
+            >
+              🏆
+            </motion.div>
             <h1
               style={{
                 fontFamily: "var(--font-heading)",
-                fontSize: "clamp(1.8rem, 5vw, 2.5rem)",
-                background: "linear-gradient(135deg, var(--color-secondary), var(--color-danger))",
+                fontSize: "clamp(2rem, 6vw, 3rem)",
+                background: "linear-gradient(135deg, var(--color-secondary), var(--color-pink), var(--color-accent))",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 marginBottom: "8px",
+                lineHeight: 1.2,
               }}
             >
               {winner?.username} Wins!
             </h1>
-            <p style={{ color: "var(--text-secondary)", fontWeight: 600, fontSize: "1.1rem" }}>
-              {settings.difficulty.toUpperCase()} • {settings.questionCount} Questions
-            </p>
+            <span
+              style={{
+                padding: "8px 20px",
+                borderRadius: "var(--radius-full)",
+                background: "linear-gradient(135deg, rgba(74, 222, 128, 0.12), rgba(56, 189, 248, 0.08))",
+                border: "2px solid var(--color-primary)",
+                color: "var(--color-primary)",
+                fontFamily: "var(--font-heading)",
+                fontWeight: 700,
+                fontSize: "1rem",
+              }}
+            >
+              {settings.difficulty.charAt(0).toUpperCase() + settings.difficulty.slice(1)} • {settings.questionCount} Questions
+            </span>
           </motion.div>
 
-          {/* Rankings Table */}
+          {/* ===== RANKINGS TABLE ===== */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.4 }}
             className="game-card"
-            style={{ padding: "24px", marginBottom: "24px" }}
+            style={{ padding: "0", marginBottom: "24px", overflow: "hidden" }}
           >
-            <h2
+            {/* Header */}
+            <div
               style={{
-                fontFamily: "var(--font-heading)",
-                fontSize: "1.2rem",
-                marginBottom: "16px",
-                color: "var(--text-primary)",
+                display: "grid",
+                gridTemplateColumns: "55px 1fr 75px 75px 85px",
+                padding: "14px 20px",
+                background: "var(--bg-secondary)",
+                borderBottom: "2px solid var(--border-color)",
+                fontWeight: 800,
+                fontSize: "0.8rem",
+                color: "var(--text-muted)",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+                fontFamily: "var(--font-body)",
               }}
             >
-              📊 Final Rankings
-            </h2>
+              <span>Rank</span>
+              <span>Player</span>
+              <span style={{ textAlign: "center" }}>Score</span>
+              <span style={{ textAlign: "center" }}>Acc.</span>
+              <span style={{ textAlign: "center" }}>Time</span>
+            </div>
 
-            <div style={{ overflowX: "auto" }}>
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  fontFamily: "var(--font-body)",
-                }}
-              >
-                <thead>
-                  <tr
+            {/* Rows */}
+            {rankings.map((player, idx) => {
+              const style = rankStyles[player.rank] || null;
+              return (
+                <motion.div
+                  key={player.username}
+                  initial={{ opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 + idx * 0.12, type: "spring", stiffness: 150 }}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "55px 1fr 75px 75px 85px",
+                    padding: "16px 20px",
+                    borderBottom: "1px solid var(--border-color)",
+                    alignItems: "center",
+                    background: idx === 0
+                      ? "linear-gradient(135deg, rgba(251, 191, 36, 0.06), rgba(249, 115, 22, 0.04))"
+                      : "transparent",
+                    boxShadow: style?.glow || "none",
+                    fontFamily: "var(--font-body)",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-secondary)")}
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = idx === 0
+                      ? "linear-gradient(135deg, rgba(251, 191, 36, 0.06), rgba(249, 115, 22, 0.04))"
+                      : "transparent")
+                  }
+                >
+                  {/* Rank */}
+                  <span
                     style={{
-                      borderBottom: "2px solid var(--border-color)",
-                      color: "var(--text-muted)",
+                      fontWeight: 800,
+                      fontSize: style ? "1.4rem" : "0.95rem",
+                      fontFamily: "var(--font-heading)",
+                    }}
+                  >
+                    {style ? style.emoji : `#${player.rank}`}
+                  </span>
+
+                  {/* Username */}
+                  <span
+                    style={{
+                      fontWeight: 700,
+                      color: "var(--text-primary)",
+                      fontSize: style?.size || "1rem",
+                      fontFamily: "var(--font-heading)",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {player.username}
+                  </span>
+
+                  {/* Score */}
+                  <span
+                    style={{
+                      textAlign: "center",
+                      fontWeight: 800,
+                      color: "var(--color-primary)",
+                      fontFamily: "var(--font-heading)",
+                      fontSize: "1.15rem",
+                    }}
+                  >
+                    {player.score}/{player.totalQuestions}
+                  </span>
+
+                  {/* Accuracy */}
+                  <span
+                    style={{
+                      textAlign: "center",
+                      fontWeight: 700,
+                      color: player.accuracy >= 70 ? "var(--color-primary)" : player.accuracy >= 40 ? "var(--color-secondary)" : "var(--color-danger)",
+                    }}
+                  >
+                    {player.accuracy}%
+                  </span>
+
+                  {/* Time */}
+                  <span
+                    style={{
+                      textAlign: "center",
+                      color: "var(--text-secondary)",
+                      fontWeight: 600,
                       fontSize: "0.85rem",
                     }}
                   >
-                    <th style={{ padding: "10px 8px", textAlign: "left" }}>Rank</th>
-                    <th style={{ padding: "10px 8px", textAlign: "left" }}>Player</th>
-                    <th style={{ padding: "10px 8px", textAlign: "center" }}>Score</th>
-                    <th style={{ padding: "10px 8px", textAlign: "center" }}>Accuracy</th>
-                    <th style={{ padding: "10px 8px", textAlign: "center" }}>Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rankings.map((player, idx) => (
-                    <motion.tr
-                      key={player.username}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.3 + idx * 0.1 }}
-                      style={{
-                        borderBottom: "1px solid var(--border-color)",
-                        background: idx === 0 ? "rgba(251, 146, 60, 0.08)" : "transparent",
-                      }}
-                    >
-                      <td
-                        style={{
-                          padding: "14px 8px",
-                          fontSize: "1.3rem",
-                          fontWeight: 700,
-                        }}
-                      >
-                        {getRankEmoji(player.rank)}
-                      </td>
-                      <td
-                        style={{
-                          padding: "14px 8px",
-                          fontFamily: "var(--font-heading)",
-                          fontSize: "1rem",
-                          color: "var(--text-primary)",
-                        }}
-                      >
-                        {player.username}
-                      </td>
-                      <td
-                        style={{
-                          padding: "14px 8px",
-                          textAlign: "center",
-                          fontWeight: 700,
-                          color: "var(--color-primary)",
-                        }}
-                      >
-                        {player.score}/{player.totalQuestions}
-                      </td>
-                      <td
-                        style={{
-                          padding: "14px 8px",
-                          textAlign: "center",
-                          fontWeight: 600,
-                          color: player.accuracy >= 70 ? "var(--color-primary)" : "var(--color-secondary)",
-                        }}
-                      >
-                        {player.accuracy}%
-                      </td>
-                      <td
-                        style={{
-                          padding: "14px 8px",
-                          textAlign: "center",
-                          color: "var(--text-secondary)",
-                          fontWeight: 600,
-                        }}
-                      >
-                        {formatTimeReadable(player.totalTime)}
-                      </td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                    {formatTimeReadable(player.totalTime)}
+                  </span>
+                </motion.div>
+              );
+            })}
           </motion.div>
 
-          {/* Actions */}
-          <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+          {/* ===== ACTION BUTTONS ===== */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}
+          >
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="btn-game btn-primary"
               onClick={handlePlayAgain}
+              style={{ padding: "16px 36px", fontSize: "1.2rem" }}
             >
               🔄 Play Again
             </motion.button>
@@ -215,11 +284,12 @@ const PartyResultPage = () => {
               whileTap={{ scale: 0.95 }}
               className="btn-game btn-secondary"
               onClick={handleGoHome}
+              style={{ padding: "16px 28px", fontSize: "1.1rem" }}
             >
               🏠 Home
             </motion.button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </main>
     </>
   );

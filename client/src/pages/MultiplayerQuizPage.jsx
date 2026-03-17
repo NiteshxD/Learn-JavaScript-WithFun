@@ -1,9 +1,8 @@
 // =============================================================================
 // Multiplayer Quiz Page — Server-Synced Game Screen
 // =============================================================================
-// Displays questions sent by the server. Timer is server-controlled.
-// Player submits answers to server for validation (anti-cheat).
-// Shows live position indicator.
+// Premium game UI with server-controlled timer, live rank indicator,
+// answer feedback, and smooth question transitions.
 // =============================================================================
 
 import { useState, useEffect } from "react";
@@ -14,6 +13,13 @@ import { useParty } from "../context/PartyContext";
 import ProgressBar from "../components/ProgressBar";
 import useSound from "../hooks/useSound";
 
+const optionGradients = [
+  "linear-gradient(135deg, #4ade80, #22c55e)", // A — Green
+  "linear-gradient(135deg, #38bdf8, #0284c7)", // B — Blue
+  "linear-gradient(135deg, #fb923c, #ea580c)", // C — Orange
+  "linear-gradient(135deg, #a78bfa, #7c3aed)", // D — Purple
+];
+
 const MultiplayerQuizPage = () => {
   const navigate = useNavigate();
   const {
@@ -23,7 +29,6 @@ const MultiplayerQuizPage = () => {
   } = useParty();
   const { playCorrect, playWrong } = useSound();
 
-  // Local timer for display (mirrors server timer)
   const [timeLeft, setTimeLeft] = useState(timeLimit);
 
   // Redirect if not in game
@@ -38,32 +43,25 @@ const MultiplayerQuizPage = () => {
     }
   }, [gameStatus, finalResults, navigate]);
 
-  // Client-side timer display (the server enforces the actual deadline)
+  // Client-side timer display (server enforces the actual deadline)
   useEffect(() => {
     if (!questionStartTime || !timeLimit) return;
-
     const interval = setInterval(() => {
       const elapsed = Date.now() - questionStartTime;
-      const remaining = Math.max(0, timeLimit - elapsed);
-      setTimeLeft(remaining);
-    }, 100);
-
+      setTimeLeft(Math.max(0, timeLimit - elapsed));
+    }, 50);
     return () => clearInterval(interval);
   }, [questionStartTime, timeLimit]);
 
-  // Reset timer on new question
-  useEffect(() => {
-    setTimeLeft(timeLimit);
-  }, [questionIndex, timeLimit]);
+  useEffect(() => { setTimeLeft(timeLimit); }, [questionIndex, timeLimit]);
 
-  // Play sound on answer result
+  // Sound feedback
   useEffect(() => {
     if (answerResult) {
       answerResult.correct ? playCorrect() : playWrong();
     }
   }, [answerResult]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Get my rank from scoreboard
   const myRank = scoreboard.findIndex((p) => p.score === myScore) + 1 || "—";
 
   const handleAnswer = (answer) => {
@@ -74,6 +72,7 @@ const MultiplayerQuizPage = () => {
   if (!currentQuestion) {
     return (
       <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="bg-pattern" />
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
@@ -86,42 +85,8 @@ const MultiplayerQuizPage = () => {
   }
 
   const timerPercent = (timeLeft / timeLimit) * 100;
+  const timerColor = timerPercent < 25 ? "var(--color-danger)" : timerPercent < 50 ? "var(--color-secondary)" : "var(--color-primary)";
   const optionLabels = ["A", "B", "C", "D"];
-
-  const getOptionStyle = (option) => {
-    const base = {
-      width: "100%",
-      padding: "16px 20px",
-      borderRadius: "var(--radius-md)",
-      border: "2px solid var(--border-color)",
-      background: "var(--bg-card)",
-      color: "var(--text-primary)",
-      fontSize: "1rem",
-      fontWeight: 600,
-      fontFamily: "var(--font-body)",
-      cursor: selectedAnswer !== null ? "default" : "pointer",
-      textAlign: "left",
-      transition: "all 0.2s ease",
-      boxShadow: "var(--shadow-card)",
-    };
-
-    if (!answerResult) {
-      // Highlight selected before result comes back
-      if (selectedAnswer === option) {
-        return { ...base, border: "2px solid var(--color-sky)", background: "rgba(56, 189, 248, 0.15)" };
-      }
-      return base;
-    }
-
-    // Show feedback after result
-    if (option === answerResult.correctAnswer) {
-      return { ...base, border: "2px solid var(--color-primary)", background: "rgba(74, 222, 128, 0.15)" };
-    }
-    if (option === selectedAnswer && !answerResult.correct) {
-      return { ...base, border: "2px solid var(--color-danger)", background: "rgba(239, 68, 68, 0.15)" };
-    }
-    return { ...base, opacity: 0.5 };
-  };
 
   return (
     <>
@@ -132,72 +97,83 @@ const MultiplayerQuizPage = () => {
       <main
         style={{
           minHeight: "calc(100vh - 64px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           padding: "24px 20px",
-          maxWidth: "720px",
-          margin: "0 auto",
           position: "relative",
         }}
       >
         <div className="bg-pattern" />
-        <div style={{ position: "relative", zIndex: 1 }}>
-          {/* Top Bar */}
+
+        <div
+          style={{
+            maxWidth: "700px",
+            width: "100%",
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          {/* ===== TOP STATUS BAR ===== */}
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: "16px",
+              marginBottom: "12px",
               flexWrap: "wrap",
               gap: "10px",
             }}
           >
-            {/* Server Timer */}
+            {/* Timer circle */}
             <div
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "8px",
-                padding: "8px 18px",
+                gap: "10px",
+                padding: "10px 22px",
                 borderRadius: "var(--radius-full)",
                 background: "var(--bg-card)",
-                border: `2px solid ${timerPercent < 30 ? "var(--color-danger)" : "var(--border-color)"}`,
+                border: `3px solid ${timerColor}`,
+                boxShadow: timerPercent < 25 ? "0 0 15px rgba(239, 68, 68, 0.3)" : "var(--shadow-card)",
                 fontFamily: "var(--font-heading)",
-                fontSize: "1.1rem",
-                color: timerPercent < 30 ? "var(--color-danger)" : "var(--text-primary)",
+                fontSize: "1.3rem",
+                color: timerColor,
                 fontVariantNumeric: "tabular-nums",
+                minWidth: "100px",
+                justifyContent: "center",
+                transition: "all 0.3s",
               }}
             >
               ⏱️ {Math.ceil(timeLeft / 1000)}s
             </div>
 
-            {/* Score + Rank */}
-            <div
-              style={{
-                display: "flex",
-                gap: "12px",
-                alignItems: "center",
-              }}
-            >
+            {/* Score badges */}
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
               <span
                 style={{
-                  padding: "6px 14px",
+                  padding: "8px 16px",
                   borderRadius: "var(--radius-full)",
-                  background: "rgba(74, 222, 128, 0.15)",
-                  color: "var(--color-primary)",
+                  background: "linear-gradient(135deg, rgba(251, 146, 60, 0.15), rgba(234, 88, 12, 0.08))",
+                  border: "2px solid var(--color-secondary)",
+                  color: "var(--color-secondary)",
+                  fontFamily: "var(--font-heading)",
                   fontWeight: 700,
-                  fontSize: "0.9rem",
+                  fontSize: "1rem",
                 }}
               >
                 🏆 #{myRank}
               </span>
               <span
                 style={{
-                  padding: "6px 14px",
+                  padding: "8px 16px",
                   borderRadius: "var(--radius-full)",
-                  background: "rgba(56, 189, 248, 0.15)",
-                  color: "var(--color-sky)",
+                  background: "linear-gradient(135deg, rgba(74, 222, 128, 0.15), rgba(34, 197, 94, 0.08))",
+                  border: "2px solid var(--color-primary)",
+                  color: "var(--color-primary)",
+                  fontFamily: "var(--font-heading)",
                   fontWeight: 700,
-                  fontSize: "0.9rem",
+                  fontSize: "1rem",
                 }}
               >
                 ⭐ {myScore}/{questionIndex + 1}
@@ -208,22 +184,21 @@ const MultiplayerQuizPage = () => {
           {/* Timer Bar */}
           <div
             style={{
-              height: "6px",
-              borderRadius: "3px",
+              height: "8px",
+              borderRadius: "var(--radius-full)",
               background: "var(--bg-secondary)",
               marginBottom: "16px",
               overflow: "hidden",
+              border: "1px solid var(--border-color)",
             }}
           >
             <motion.div
               style={{
                 height: "100%",
-                borderRadius: "3px",
-                background: timerPercent < 30
-                  ? "var(--color-danger)"
-                  : "linear-gradient(90deg, var(--color-primary), var(--color-sky))",
+                borderRadius: "var(--radius-full)",
+                background: `linear-gradient(90deg, ${timerColor}, ${timerPercent < 25 ? "var(--color-danger-light)" : "var(--color-sky)"})`,
                 width: `${timerPercent}%`,
-                transition: "width 0.1s linear",
+                transition: "width 0.05s linear",
               }}
             />
           </div>
@@ -231,37 +206,48 @@ const MultiplayerQuizPage = () => {
           {/* Progress */}
           <ProgressBar current={questionIndex} total={totalQuestions} />
 
-          {/* Question Card */}
+          {/* ===== QUESTION CARD ===== */}
           <AnimatePresence mode="wait">
             <motion.div
               key={questionIndex}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.3 }}
+              initial={{ opacity: 0, x: 60, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -60, scale: 0.95 }}
+              transition={{ duration: 0.3, type: "spring", stiffness: 200 }}
             >
-              {/* Category */}
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
+              {/* Category badge */}
+              <div style={{ marginBottom: "12px" }}>
                 <span
                   style={{
-                    padding: "4px 14px",
+                    padding: "6px 16px",
                     borderRadius: "var(--radius-full)",
                     background: "linear-gradient(135deg, var(--color-accent-light), var(--color-accent))",
                     color: "#fff",
                     fontSize: "0.8rem",
-                    fontWeight: 700,
+                    fontWeight: 800,
+                    fontFamily: "var(--font-body)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
                   }}
                 >
                   {currentQuestion.category}
                 </span>
               </div>
 
-              {/* Question */}
-              <div className="game-card" style={{ marginBottom: "20px", padding: "28px" }}>
+              {/* Question text */}
+              <div
+                className="game-card"
+                style={{
+                  marginBottom: "20px",
+                  padding: "28px",
+                  borderColor: "var(--color-sky)",
+                  background: "linear-gradient(135deg, var(--bg-card), var(--bg-secondary))",
+                }}
+              >
                 <h2
                   style={{
                     fontFamily: "var(--font-heading)",
-                    fontSize: "1.3rem",
+                    fontSize: "1.35rem",
                     lineHeight: 1.5,
                     color: "var(--text-primary)",
                   }}
@@ -270,70 +256,93 @@ const MultiplayerQuizPage = () => {
                 </h2>
               </div>
 
-              {/* Options */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "12px" }}>
-                {currentQuestion.options.map((option, idx) => (
-                  <motion.button
-                    key={option}
-                    whileHover={selectedAnswer === null ? { scale: 1.02 } : {}}
-                    whileTap={selectedAnswer === null ? { scale: 0.98 } : {}}
-                    onClick={() => handleAnswer(option)}
-                    disabled={selectedAnswer !== null}
-                    style={getOptionStyle(option)}
-                  >
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: "12px" }}>
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          width: "32px",
-                          height: "32px",
-                          borderRadius: "var(--radius-full)",
-                          background: answerResult
-                            ? option === answerResult.correctAnswer
-                              ? "var(--color-primary)"
-                              : option === selectedAnswer
-                              ? "var(--color-danger)"
-                              : "var(--bg-secondary)"
-                            : selectedAnswer === option
-                            ? "var(--color-sky)"
-                            : "var(--bg-secondary)",
-                          color: (answerResult && (option === answerResult.correctAnswer || option === selectedAnswer))
-                            || selectedAnswer === option
-                            ? "#fff"
-                            : "var(--text-secondary)",
-                          fontWeight: 800,
-                          fontSize: "0.85rem",
-                          flexShrink: 0,
-                        }}
-                      >
-                        {answerResult
-                          ? option === answerResult.correctAnswer
-                            ? "✓"
-                            : option === selectedAnswer && !answerResult.correct
-                            ? "✗"
-                            : optionLabels[idx]
-                          : optionLabels[idx]}
+              {/* ===== OPTIONS ===== */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                {currentQuestion.options.map((option, idx) => {
+                  const isSelected = selectedAnswer === option;
+                  const isCorrect = answerResult && option === answerResult.correctAnswer;
+                  const isWrong = answerResult && isSelected && !answerResult.correct;
+                  const isRevealed = !!answerResult;
+
+                  return (
+                    <motion.button
+                      key={option}
+                      whileHover={!isRevealed ? { scale: 1.03, y: -3 } : {}}
+                      whileTap={!isRevealed ? { scale: 0.97 } : {}}
+                      onClick={() => handleAnswer(option)}
+                      disabled={selectedAnswer !== null}
+                      style={{
+                        padding: "16px 14px",
+                        borderRadius: "var(--radius-lg)",
+                        border: isCorrect
+                          ? "3px solid var(--color-primary)"
+                          : isWrong
+                          ? "3px solid var(--color-danger)"
+                          : isSelected
+                          ? "3px solid var(--color-sky)"
+                          : "2px solid var(--border-color)",
+                        background: isCorrect
+                          ? "linear-gradient(135deg, rgba(74, 222, 128, 0.15), rgba(34, 197, 94, 0.10))"
+                          : isWrong
+                          ? "linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.08))"
+                          : "var(--bg-card)",
+                        color: "var(--text-primary)",
+                        fontSize: "0.95rem",
+                        fontWeight: 700,
+                        fontFamily: "var(--font-body)",
+                        cursor: selectedAnswer !== null ? "default" : "pointer",
+                        textAlign: "left",
+                        transition: "all 0.2s ease",
+                        boxShadow: isCorrect
+                          ? "var(--shadow-glow-green)"
+                          : isWrong
+                          ? "0 0 15px rgba(239, 68, 68, 0.3)"
+                          : "var(--shadow-card)",
+                        opacity: isRevealed && !isCorrect && !isSelected ? 0.4 : 1,
+                      }}
+                    >
+                      <span style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: "34px",
+                            height: "34px",
+                            borderRadius: "var(--radius-full)",
+                            background: isCorrect || isWrong
+                              ? isCorrect
+                                ? "var(--color-primary)"
+                                : "var(--color-danger)"
+                              : optionGradients[idx],
+                            color: "#fff",
+                            fontWeight: 800,
+                            fontSize: "0.85rem",
+                            fontFamily: "var(--font-heading)",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {isCorrect ? "✓" : isWrong ? "✗" : optionLabels[idx]}
+                        </span>
+                        <span style={{ lineHeight: 1.4 }}>{option}</span>
                       </span>
-                      <span>{option}</span>
-                    </span>
-                  </motion.button>
-                ))}
+                    </motion.button>
+                  );
+                })}
               </div>
 
-              {/* Feedback */}
+              {/* Answer feedback */}
               <AnimatePresence>
                 {answerResult && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0 }}
                     style={{
                       textAlign: "center",
-                      marginTop: "16px",
+                      marginTop: "20px",
                       fontFamily: "var(--font-heading)",
-                      fontSize: "1.2rem",
+                      fontSize: "1.4rem",
                       color: answerResult.correct ? "var(--color-primary)" : "var(--color-danger)",
                     }}
                   >

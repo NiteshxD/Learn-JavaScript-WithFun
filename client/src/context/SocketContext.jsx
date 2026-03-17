@@ -15,11 +15,13 @@ import { io } from "socket.io-client";
 
 const SocketContext = createContext();
 
-// Socket.io server URL — uses env var or deployed backend
-const SOCKET_URL =
-  import.meta.env.VITE_SOCKET_URL ||
-  import.meta.env.VITE_API_URL?.replace("/api", "") ||
-  "https://learn-javascript-withfun.onrender.com";
+// Socket.io server URL
+// - Dev mode: connect to local backend (localhost:5000)
+// - Production: connect to deployed Render backend
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL
+  || (import.meta.env.DEV
+    ? "http://localhost:5000"
+    : "https://learn-javascript-withfun.onrender.com");
 
 export const SocketProvider = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);

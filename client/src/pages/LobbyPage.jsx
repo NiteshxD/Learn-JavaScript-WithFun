@@ -1,8 +1,8 @@
 // =============================================================================
 // Lobby Page — Waiting Room Before Game Starts
 // =============================================================================
-// Shows connected players in real-time, room code for sharing,
-// and a start button for the host. Displays countdown before game begins.
+// Premium game-like waiting room with live player list, shareable room code,
+// host controls, and animated countdown.
 // =============================================================================
 
 import { useEffect } from "react";
@@ -11,6 +11,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Helmet } from "react-helmet-async";
 import { useParty } from "../context/PartyContext";
 
+const playerColors = [
+  "var(--color-primary)", "var(--color-secondary)", "var(--color-accent)",
+  "var(--color-sky)", "var(--color-pink)", "var(--color-primary-dark)",
+  "var(--color-secondary-dark)", "var(--color-accent-dark)",
+];
+
 const LobbyPage = () => {
   const navigate = useNavigate();
   const {
@@ -18,16 +24,12 @@ const LobbyPage = () => {
     countdown, startGame, leaveRoom, roomError,
   } = useParty();
 
-  // Redirect to party page if not in a room
   useEffect(() => {
     if (!roomId) navigate("/party");
   }, [roomId, navigate]);
 
-  // Navigate to multiplayer quiz when game starts
   useEffect(() => {
-    if (gameStatus === "playing") {
-      navigate("/multiplayer-quiz");
-    }
+    if (gameStatus === "playing") navigate("/multiplayer-quiz");
   }, [gameStatus, navigate]);
 
   const handleCopyCode = () => {
@@ -43,105 +45,143 @@ const LobbyPage = () => {
       <main
         style={{
           minHeight: "calc(100vh - 64px)",
-          padding: "32px 20px",
-          maxWidth: "600px",
-          margin: "0 auto",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "40px 20px",
           position: "relative",
         }}
       >
         <div className="bg-pattern" />
-        <div style={{ position: "relative", zIndex: 1 }}>
-          {/* Countdown Overlay */}
-          <AnimatePresence>
-            {gameStatus === "countdown" && countdown !== null && (
-              <motion.div
-                key={countdown}
-                initial={{ opacity: 0, scale: 3 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.5 }}
-                transition={{ duration: 0.5, type: "spring" }}
+
+        {/* ===== COUNTDOWN OVERLAY ===== */}
+        <AnimatePresence>
+          {gameStatus === "countdown" && countdown !== null && (
+            <motion.div
+              key={`countdown-${countdown}`}
+              initial={{ opacity: 0, scale: 3 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.3 }}
+              transition={{ duration: 0.4, type: "spring", stiffness: 200 }}
+              style={{
+                position: "fixed",
+                inset: 0,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "rgba(15, 23, 42, 0.85)",
+                zIndex: 100,
+              }}
+            >
+              <span
                 style={{
-                  position: "fixed",
-                  inset: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: "rgba(0,0,0,0.7)",
-                  zIndex: 100,
+                  fontFamily: "var(--font-heading)",
+                  fontSize: "10rem",
+                  background: "linear-gradient(135deg, var(--color-secondary), var(--color-pink))",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  textShadow: "none",
+                  filter: "drop-shadow(0 0 40px rgba(251, 146, 60, 0.5))",
                 }}
               >
-                <span
-                  style={{
-                    fontFamily: "var(--font-heading)",
-                    fontSize: "8rem",
-                    color: countdown > 0 ? "var(--color-secondary)" : "var(--color-primary)",
-                    textShadow: "0 0 40px rgba(251, 146, 60, 0.5)",
-                  }}
-                >
-                  {countdown > 0 ? countdown : "GO!"}
-                </span>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                {countdown > 0 ? countdown : "GO!"}
+              </span>
+              <p style={{ color: "rgba(255,255,255,0.6)", fontFamily: "var(--font-heading)", fontSize: "1.5rem" }}>
+                {countdown > 0 ? "Get ready..." : ""}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-          {/* Room Code */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{ textAlign: "center", marginBottom: "28px" }}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          style={{
+            maxWidth: "560px",
+            width: "100%",
+            textAlign: "center",
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          {/* Title */}
+          <h1
+            style={{
+              fontFamily: "var(--font-heading)",
+              fontSize: "clamp(1.6rem, 4vw, 2.2rem)",
+              color: "var(--text-primary)",
+              marginBottom: "20px",
+            }}
           >
-            <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", fontWeight: 600, marginBottom: "4px" }}>
-              Room Code
+            🎮 Waiting Room
+          </h1>
+
+          {/* Room Code — Big clickable badge */}
+          <motion.div
+            whileHover={{ scale: 1.05, y: -3 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleCopyCode}
+            className="game-card"
+            style={{
+              padding: "20px",
+              marginBottom: "8px",
+              cursor: "pointer",
+              borderColor: "var(--color-accent)",
+              background: "linear-gradient(135deg, rgba(167, 139, 250, 0.08), rgba(244, 114, 182, 0.06))",
+            }}
+          >
+            <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", fontWeight: 700, marginBottom: "6px" }}>
+              ROOM CODE
             </p>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              onClick={handleCopyCode}
+            <div
               style={{
                 fontFamily: "var(--font-heading)",
-                fontSize: "2.5rem",
-                letterSpacing: "8px",
-                color: "var(--color-accent)",
-                cursor: "pointer",
-                background: "var(--bg-card)",
-                border: "3px dashed var(--color-accent)",
-                borderRadius: "var(--radius-lg)",
-                padding: "12px 24px",
-                display: "inline-block",
+                fontSize: "3rem",
+                letterSpacing: "10px",
+                background: "linear-gradient(135deg, var(--color-accent), var(--color-pink))",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
               }}
-              title="Click to copy"
             >
               {roomId}
-            </motion.div>
-            <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginTop: "6px" }}>
-              📋 Click to copy • Share with friends!
-            </p>
+            </div>
           </motion.div>
+          <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginBottom: "24px" }}>
+            📋 Click to copy • Share with friends!
+          </p>
 
           {/* Settings Badge */}
-          <div style={{ textAlign: "center", marginBottom: "24px" }}>
+          <div style={{ marginBottom: "24px" }}>
             <span
               style={{
-                padding: "6px 16px",
+                padding: "8px 20px",
                 borderRadius: "var(--radius-full)",
-                background: "rgba(74, 222, 128, 0.15)",
+                background: "linear-gradient(135deg, rgba(74, 222, 128, 0.12), rgba(56, 189, 248, 0.08))",
+                border: "2px solid var(--color-primary)",
                 color: "var(--color-primary)",
+                fontFamily: "var(--font-heading)",
                 fontWeight: 700,
-                fontSize: "0.9rem",
-                fontFamily: "var(--font-body)",
+                fontSize: "1rem",
               }}
             >
-              {settings.difficulty.toUpperCase()} • {settings.questionCount} Questions
+              {settings.difficulty.charAt(0).toUpperCase() + settings.difficulty.slice(1)} • {settings.questionCount} Questions
             </span>
           </div>
 
           {/* Player List */}
-          <div className="game-card" style={{ padding: "24px", marginBottom: "24px" }}>
+          <div
+            className="game-card"
+            style={{ padding: "24px", marginBottom: "24px", textAlign: "left" }}
+          >
             <h2
               style={{
                 fontFamily: "var(--font-heading)",
-                fontSize: "1.2rem",
+                fontSize: "1.3rem",
                 color: "var(--text-primary)",
                 marginBottom: "16px",
+                textAlign: "center",
               }}
             >
               👥 Players ({players.length}/8)
@@ -152,42 +192,61 @@ const LobbyPage = () => {
                 {players.map((player, idx) => (
                   <motion.div
                     key={player.username}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ delay: idx * 0.1 }}
+                    initial={{ opacity: 0, x: -30, scale: 0.9 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, x: 30, scale: 0.9 }}
+                    transition={{ delay: idx * 0.08, type: "spring", stiffness: 200 }}
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "12px",
-                      padding: "12px 16px",
+                      gap: "14px",
+                      padding: "14px 18px",
                       borderRadius: "var(--radius-md)",
                       background: "var(--bg-secondary)",
                       border: `2px solid ${player.isHost ? "var(--color-secondary)" : "var(--border-color)"}`,
+                      boxShadow: player.isHost ? "var(--shadow-glow-orange)" : "none",
                     }}
                   >
-                    <span style={{ fontSize: "1.4rem" }}>
+                    {/* Player avatar circle */}
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "var(--radius-full)",
+                        background: `linear-gradient(135deg, ${playerColors[idx]}, ${playerColors[(idx + 3) % 8]})`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "1.2rem",
+                        flexShrink: 0,
+                      }}
+                    >
                       {player.isHost ? "👑" : "🎮"}
-                    </span>
+                    </div>
+
                     <span
                       style={{
                         fontFamily: "var(--font-heading)",
-                        fontSize: "1.1rem",
+                        fontSize: "1.15rem",
                         color: "var(--text-primary)",
                         flex: 1,
                       }}
                     >
                       {player.username}
                     </span>
+
                     {player.isHost && (
                       <span
                         style={{
-                          padding: "2px 10px",
+                          padding: "4px 12px",
                           borderRadius: "var(--radius-full)",
-                          background: "rgba(251, 146, 60, 0.2)",
-                          color: "var(--color-secondary)",
+                          background: "linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark))",
+                          color: "#fff",
                           fontSize: "0.75rem",
-                          fontWeight: 700,
+                          fontWeight: 800,
+                          fontFamily: "var(--font-body)",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.5px",
                         }}
                       >
                         HOST
@@ -196,6 +255,27 @@ const LobbyPage = () => {
                   </motion.div>
                 ))}
               </AnimatePresence>
+
+              {/* Empty slots */}
+              {Array.from({ length: Math.max(0, 2 - players.length) }).map((_, i) => (
+                <motion.div
+                  key={`empty-${i}`}
+                  animate={{ opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ repeat: Infinity, duration: 2, delay: i * 0.5 }}
+                  style={{
+                    padding: "14px 18px",
+                    borderRadius: "var(--radius-md)",
+                    border: "2px dashed var(--border-color)",
+                    color: "var(--text-muted)",
+                    textAlign: "center",
+                    fontFamily: "var(--font-body)",
+                    fontWeight: 600,
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  Waiting for player...
+                </motion.div>
+              ))}
             </div>
           </div>
 
@@ -206,9 +286,9 @@ const LobbyPage = () => {
               animate={{ opacity: 1 }}
               style={{
                 color: "var(--color-danger)",
-                textAlign: "center",
                 fontWeight: 700,
                 marginBottom: "16px",
+                fontSize: "0.95rem",
               }}
             >
               ⚠️ {roomError}
@@ -224,7 +304,11 @@ const LobbyPage = () => {
                 className="btn-game btn-primary"
                 onClick={startGame}
                 disabled={players.length < 2}
-                style={{ padding: "14px 32px", fontSize: "1.1rem" }}
+                style={{
+                  padding: "16px 36px",
+                  fontSize: "1.2rem",
+                  opacity: players.length < 2 ? 0.6 : 1,
+                }}
               >
                 {players.length < 2 ? "⏳ Need 2+ Players" : "🚀 Start Game!"}
               </motion.button>
@@ -234,12 +318,12 @@ const LobbyPage = () => {
                 transition={{ repeat: Infinity, duration: 2 }}
                 style={{
                   padding: "14px 32px",
-                  fontSize: "1.1rem",
                   fontFamily: "var(--font-heading)",
+                  fontSize: "1.2rem",
                   color: "var(--text-secondary)",
                 }}
               >
-                ⏳ Waiting for host to start...
+                ⏳ Waiting for host...
               </motion.div>
             )}
             <motion.button
@@ -247,12 +331,12 @@ const LobbyPage = () => {
               whileTap={{ scale: 0.95 }}
               className="btn-game btn-secondary"
               onClick={() => { leaveRoom(); navigate("/party"); }}
-              style={{ padding: "14px 32px", fontSize: "1.1rem" }}
+              style={{ padding: "16px 28px", fontSize: "1.1rem" }}
             >
               🚪 Leave
             </motion.button>
           </div>
-        </div>
+        </motion.div>
       </main>
     </>
   );
