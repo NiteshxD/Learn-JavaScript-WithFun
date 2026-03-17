@@ -1,8 +1,5 @@
 // =============================================================================
-// Lobby Page — Waiting Room Before Game Starts
-// =============================================================================
-// Premium game-like waiting room with live player list, shareable room code,
-// host controls, and animated countdown.
+// Lobby Page — Neon Waiting Room
 // =============================================================================
 
 import { useEffect } from "react";
@@ -11,182 +8,85 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Helmet } from "react-helmet-async";
 import { useParty } from "../context/PartyContext";
 
-const playerColors = [
-  "var(--color-primary)", "var(--color-secondary)", "var(--color-accent)",
-  "var(--color-sky)", "var(--color-pink)", "var(--color-primary-dark)",
-  "var(--color-secondary-dark)", "var(--color-accent-dark)",
+const playerGradients = [
+  "linear-gradient(135deg, #00ff88, #00cc6a)",
+  "linear-gradient(135deg, #00d4ff, #00a8cc)",
+  "linear-gradient(135deg, #ff6b35, #e55a2b)",
+  "linear-gradient(135deg, #a855f7, #7c3aed)",
+  "linear-gradient(135deg, #ff2d87, #cc2470)",
+  "linear-gradient(135deg, #ffd700, #cca800)",
+  "linear-gradient(135deg, #00ff88, #00d4ff)",
+  "linear-gradient(135deg, #ff6b35, #a855f7)",
 ];
 
 const LobbyPage = () => {
   const navigate = useNavigate();
-  const {
-    roomId, players, isHost, settings, gameStatus,
-    countdown, startGame, leaveRoom, roomError,
-  } = useParty();
+  const { roomId, players, isHost, settings, gameStatus, countdown, startGame, leaveRoom, roomError } = useParty();
 
-  useEffect(() => {
-    if (!roomId) navigate("/party");
-  }, [roomId, navigate]);
+  useEffect(() => { if (!roomId) navigate("/party"); }, [roomId, navigate]);
+  useEffect(() => { if (gameStatus === "playing") navigate("/multiplayer-quiz"); }, [gameStatus, navigate]);
 
-  useEffect(() => {
-    if (gameStatus === "playing") navigate("/multiplayer-quiz");
-  }, [gameStatus, navigate]);
-
-  const handleCopyCode = () => {
-    navigator.clipboard.writeText(roomId);
-  };
+  const handleCopyCode = () => navigator.clipboard.writeText(roomId);
 
   return (
     <>
-      <Helmet>
-        <title>{`Lobby — ${roomId || "..."} — JS Quiz Challenge`}</title>
-      </Helmet>
-
-      <main
-        style={{
-          minHeight: "calc(100vh - 64px)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "40px 20px",
-          position: "relative",
-        }}
-      >
+      <Helmet><title>{`Lobby — ${roomId || "..."}`}</title></Helmet>
+      <main style={{ minHeight: "calc(100vh - 64px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 20px", position: "relative" }}>
         <div className="bg-pattern" />
 
-        {/* ===== COUNTDOWN OVERLAY ===== */}
+        {/* Countdown Overlay */}
         <AnimatePresence>
           {gameStatus === "countdown" && countdown !== null && (
             <motion.div
-              key={`countdown-${countdown}`}
+              key={`cd-${countdown}`}
               initial={{ opacity: 0, scale: 3 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.3 }}
               transition={{ duration: 0.4, type: "spring", stiffness: 200 }}
-              style={{
-                position: "fixed",
-                inset: 0,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "rgba(15, 23, 42, 0.85)",
-                zIndex: 100,
-              }}
+              style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "rgba(10, 14, 26, 0.92)", zIndex: 100 }}
             >
-              <span
-                style={{
-                  fontFamily: "var(--font-heading)",
-                  fontSize: "10rem",
-                  background: "linear-gradient(135deg, var(--color-secondary), var(--color-pink))",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  textShadow: "none",
-                  filter: "drop-shadow(0 0 40px rgba(251, 146, 60, 0.5))",
-                }}
-              >
+              <span style={{ fontFamily: "var(--font-heading)", fontSize: "10rem", fontWeight: 900, background: "linear-gradient(135deg, var(--color-primary), var(--color-sky))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", filter: "drop-shadow(0 0 60px rgba(0,255,136,0.5))" }}>
                 {countdown > 0 ? countdown : "GO!"}
               </span>
-              <p style={{ color: "rgba(255,255,255,0.6)", fontFamily: "var(--font-heading)", fontSize: "1.5rem" }}>
-                {countdown > 0 ? "Get ready..." : ""}
+              <p style={{ color: "var(--text-muted)", fontFamily: "var(--font-heading)", fontSize: "0.8rem", letterSpacing: "3px" }}>
+                {countdown > 0 ? "GET READY" : ""}
               </p>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          style={{
-            maxWidth: "560px",
-            width: "100%",
-            textAlign: "center",
-            position: "relative",
-            zIndex: 1,
-          }}
-        >
-          {/* Title */}
-          <h1
-            style={{
-              fontFamily: "var(--font-heading)",
-              fontSize: "clamp(1.6rem, 4vw, 2.2rem)",
-              color: "var(--text-primary)",
-              marginBottom: "20px",
-            }}
-          >
-            🎮 Waiting Room
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} style={{ maxWidth: "560px", width: "100%", textAlign: "center", position: "relative", zIndex: 1 }}>
+          <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "clamp(1rem, 3vw, 1.5rem)", fontWeight: 800, letterSpacing: "3px", color: "var(--text-primary)", marginBottom: "20px" }}>
+            🎮 WAITING ROOM
           </h1>
 
-          {/* Room Code — Big clickable badge */}
+          {/* Room Code */}
           <motion.div
-            whileHover={{ scale: 1.05, y: -3 }}
+            whileHover={{ scale: 1.03, y: -3 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleCopyCode}
             className="game-card"
-            style={{
-              padding: "20px",
-              marginBottom: "8px",
-              cursor: "pointer",
-              borderColor: "var(--color-accent)",
-              background: "linear-gradient(135deg, rgba(167, 139, 250, 0.08), rgba(244, 114, 182, 0.06))",
-            }}
+            style={{ padding: "20px", marginBottom: "8px", cursor: "pointer", borderColor: "rgba(168, 85, 247, 0.2)", background: "linear-gradient(135deg, rgba(168, 85, 247, 0.05), rgba(255, 45, 135, 0.03))" }}
           >
-            <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", fontWeight: 700, marginBottom: "6px" }}>
-              ROOM CODE
-            </p>
-            <div
-              style={{
-                fontFamily: "var(--font-heading)",
-                fontSize: "3rem",
-                letterSpacing: "10px",
-                background: "linear-gradient(135deg, var(--color-accent), var(--color-pink))",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
+            <p style={{ color: "var(--text-muted)", fontSize: "0.65rem", fontFamily: "var(--font-heading)", letterSpacing: "3px", marginBottom: "6px" }}>ROOM CODE</p>
+            <div style={{ fontFamily: "var(--font-heading)", fontSize: "2.5rem", fontWeight: 900, letterSpacing: "12px", background: "linear-gradient(135deg, var(--color-accent), var(--color-pink))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", textShadow: "none", filter: "drop-shadow(0 0 20px rgba(168,85,247,0.3))" }}>
               {roomId}
             </div>
           </motion.div>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginBottom: "24px" }}>
-            📋 Click to copy • Share with friends!
-          </p>
+          <p style={{ color: "var(--text-muted)", fontSize: "0.75rem", marginBottom: "24px" }}>📋 Click to copy • Share with friends!</p>
 
-          {/* Settings Badge */}
+          {/* Settings */}
           <div style={{ marginBottom: "24px" }}>
-            <span
-              style={{
-                padding: "8px 20px",
-                borderRadius: "var(--radius-full)",
-                background: "linear-gradient(135deg, rgba(74, 222, 128, 0.12), rgba(56, 189, 248, 0.08))",
-                border: "2px solid var(--color-primary)",
-                color: "var(--color-primary)",
-                fontFamily: "var(--font-heading)",
-                fontWeight: 700,
-                fontSize: "1rem",
-              }}
-            >
-              {settings.difficulty.charAt(0).toUpperCase() + settings.difficulty.slice(1)} • {settings.questionCount} Questions
+            <span style={{ padding: "8px 20px", borderRadius: "var(--radius-full)", background: "rgba(0, 255, 136, 0.06)", border: "1px solid rgba(0, 255, 136, 0.15)", color: "var(--color-primary)", fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "0.7rem", letterSpacing: "1px" }}>
+              {settings.difficulty.toUpperCase()} • {settings.questionCount} QUESTIONS
             </span>
           </div>
 
           {/* Player List */}
-          <div
-            className="game-card"
-            style={{ padding: "24px", marginBottom: "24px", textAlign: "left" }}
-          >
-            <h2
-              style={{
-                fontFamily: "var(--font-heading)",
-                fontSize: "1.3rem",
-                color: "var(--text-primary)",
-                marginBottom: "16px",
-                textAlign: "center",
-              }}
-            >
-              👥 Players ({players.length}/8)
+          <div className="game-card" style={{ padding: "24px", marginBottom: "24px", textAlign: "left" }}>
+            <h2 style={{ fontFamily: "var(--font-heading)", fontSize: "0.8rem", letterSpacing: "2px", color: "var(--text-secondary)", marginBottom: "16px", textAlign: "center" }}>
+              PLAYERS ({players.length}/8)
             </h2>
-
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               <AnimatePresence>
                 {players.map((player, idx) => (
@@ -197,58 +97,21 @@ const LobbyPage = () => {
                     exit={{ opacity: 0, x: 30, scale: 0.9 }}
                     transition={{ delay: idx * 0.08, type: "spring", stiffness: 200 }}
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "14px",
-                      padding: "14px 18px",
+                      display: "flex", alignItems: "center", gap: "14px", padding: "14px 18px",
                       borderRadius: "var(--radius-md)",
-                      background: "var(--bg-secondary)",
-                      border: `2px solid ${player.isHost ? "var(--color-secondary)" : "var(--border-color)"}`,
+                      background: player.isHost ? "rgba(255, 107, 53, 0.06)" : "var(--bg-secondary)",
+                      border: player.isHost ? "1px solid rgba(255, 107, 53, 0.2)" : "1px solid var(--border-color)",
                       boxShadow: player.isHost ? "var(--shadow-glow-orange)" : "none",
                     }}
                   >
-                    {/* Player avatar circle */}
-                    <div
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        borderRadius: "var(--radius-full)",
-                        background: `linear-gradient(135deg, ${playerColors[idx]}, ${playerColors[(idx + 3) % 8]})`,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "1.2rem",
-                        flexShrink: 0,
-                      }}
-                    >
+                    <div style={{ width: "40px", height: "40px", borderRadius: "var(--radius-full)", background: playerGradients[idx], display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.1rem", flexShrink: 0 }}>
                       {player.isHost ? "👑" : "🎮"}
                     </div>
-
-                    <span
-                      style={{
-                        fontFamily: "var(--font-heading)",
-                        fontSize: "1.15rem",
-                        color: "var(--text-primary)",
-                        flex: 1,
-                      }}
-                    >
+                    <span style={{ fontFamily: "var(--font-heading)", fontSize: "0.85rem", fontWeight: 700, letterSpacing: "1px", color: "var(--text-primary)", flex: 1 }}>
                       {player.username}
                     </span>
-
                     {player.isHost && (
-                      <span
-                        style={{
-                          padding: "4px 12px",
-                          borderRadius: "var(--radius-full)",
-                          background: "linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark))",
-                          color: "#fff",
-                          fontSize: "0.75rem",
-                          fontWeight: 800,
-                          fontFamily: "var(--font-body)",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.5px",
-                        }}
-                      >
+                      <span style={{ padding: "4px 12px", borderRadius: "var(--radius-full)", background: "linear-gradient(135deg, var(--color-secondary), var(--color-secondary-dark))", color: "#fff", fontSize: "0.6rem", fontWeight: 800, fontFamily: "var(--font-heading)", letterSpacing: "1px" }}>
                         HOST
                       </span>
                     )}
@@ -256,22 +119,12 @@ const LobbyPage = () => {
                 ))}
               </AnimatePresence>
 
-              {/* Empty slots */}
               {Array.from({ length: Math.max(0, 2 - players.length) }).map((_, i) => (
                 <motion.div
                   key={`empty-${i}`}
                   animate={{ opacity: [0.3, 0.6, 0.3] }}
                   transition={{ repeat: Infinity, duration: 2, delay: i * 0.5 }}
-                  style={{
-                    padding: "14px 18px",
-                    borderRadius: "var(--radius-md)",
-                    border: "2px dashed var(--border-color)",
-                    color: "var(--text-muted)",
-                    textAlign: "center",
-                    fontFamily: "var(--font-body)",
-                    fontWeight: 600,
-                    fontSize: "0.9rem",
-                  }}
+                  style={{ padding: "14px 18px", borderRadius: "var(--radius-md)", border: "1px dashed var(--border-color)", color: "var(--text-muted)", textAlign: "center", fontWeight: 600, fontSize: "0.85rem" }}
                 >
                   Waiting for player...
                 </motion.div>
@@ -279,61 +132,21 @@ const LobbyPage = () => {
             </div>
           </div>
 
-          {/* Error */}
-          {roomError && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              style={{
-                color: "var(--color-danger)",
-                fontWeight: 700,
-                marginBottom: "16px",
-                fontSize: "0.95rem",
-              }}
-            >
-              ⚠️ {roomError}
-            </motion.p>
-          )}
+          {roomError && <p style={{ color: "var(--color-danger)", fontWeight: 700, marginBottom: "16px", fontSize: "0.9rem" }}>⚠️ {roomError}</p>}
 
-          {/* Actions */}
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
             {isHost ? (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="btn-game btn-primary"
-                onClick={startGame}
-                disabled={players.length < 2}
-                style={{
-                  padding: "16px 36px",
-                  fontSize: "1.2rem",
-                  opacity: players.length < 2 ? 0.6 : 1,
-                }}
-              >
-                {players.length < 2 ? "⏳ Need 2+ Players" : "🚀 Start Game!"}
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="btn-game btn-primary" onClick={startGame} disabled={players.length < 2}
+                style={{ padding: "16px 36px", opacity: players.length < 2 ? 0.5 : 1 }}>
+                {players.length < 2 ? "⏳ NEED 2+ PLAYERS" : "🚀 START GAME"}
               </motion.button>
             ) : (
-              <motion.div
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ repeat: Infinity, duration: 2 }}
-                style={{
-                  padding: "14px 32px",
-                  fontFamily: "var(--font-heading)",
-                  fontSize: "1.2rem",
-                  color: "var(--text-secondary)",
-                }}
-              >
-                ⏳ Waiting for host...
+              <motion.div animate={{ opacity: [0.5, 1, 0.5] }} transition={{ repeat: Infinity, duration: 2 }} style={{ padding: "14px 32px", fontFamily: "var(--font-heading)", fontSize: "0.8rem", letterSpacing: "2px", color: "var(--text-muted)" }}>
+                WAITING FOR HOST...
               </motion.div>
             )}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="btn-game btn-secondary"
-              onClick={() => { leaveRoom(); navigate("/party"); }}
-              style={{ padding: "16px 28px", fontSize: "1.1rem" }}
-            >
-              🚪 Leave
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="btn-game btn-secondary" onClick={() => { leaveRoom(); navigate("/party"); }} style={{ padding: "16px 28px" }}>
+              🚪 LEAVE
             </motion.button>
           </div>
         </motion.div>

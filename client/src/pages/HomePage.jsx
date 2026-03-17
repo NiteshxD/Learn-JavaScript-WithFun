@@ -1,15 +1,5 @@
 // =============================================================================
-// Home Page — Landing / Game Start Screen
-// =============================================================================
-// The first page users see. Features:
-//   1. Playful game title with floating animation
-//   2. Username input field
-//   3. Difficulty selection cards (Easy, Medium, Hard)
-//   4. "Start Quiz" button that navigates to /quiz
-//
-// WHY USENAVATE?
-//   React Router's useNavigate gives us programmatic navigation.
-//   We validate inputs before navigating to prevent empty usernames.
+// Home Page — Gaming Landing Screen
 // =============================================================================
 
 import { useState } from "react";
@@ -33,37 +23,20 @@ const HomePage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  /**
-   * Handle quiz start — validate, fetch questions, navigate
-   */
   const handleStartQuiz = async () => {
-    // Validate inputs
-    if (!nameInput.trim()) {
-      setError("Please enter your name to start!");
-      return;
-    }
-    if (!selectedDifficulty) {
-      setError("Please select a difficulty level!");
-      return;
-    }
-
+    if (!nameInput.trim()) { setError("Enter your name to start!"); return; }
+    if (!selectedDifficulty) { setError("Select a difficulty!"); return; }
     setError("");
     setIsLoading(true);
-
     try {
-      // Save player info to context
       setUsername(nameInput.trim());
       setDifficulty(selectedDifficulty);
-
-      // Fetch randomized questions from the API
       const questions = await fetchQuestions(selectedDifficulty, selectedCount);
-
-      // Start the quiz and navigate
       startQuiz(questions);
       playStart();
       navigate("/quiz");
     } catch (err) {
-      setError("Failed to load questions. Make sure the backend server is running!");
+      setError("Failed to load questions. Is the backend running?");
       console.error("Error fetching questions:", err);
     } finally {
       setIsLoading(false);
@@ -74,13 +47,7 @@ const HomePage = () => {
     <>
       <Helmet>
         <title>JS Quiz Challenge — Test Your JavaScript Knowledge</title>
-        <meta
-          name="description"
-          content="Challenge yourself with 50 JavaScript questions across multiple difficulty levels. Compete on the leaderboard and learn while you play!"
-        />
-        <meta property="og:title" content="JS Quiz Challenge — Test Your JavaScript Knowledge" />
-        <meta property="og:description" content="A gamified JavaScript quiz platform. Test your skills and climb the leaderboard!" />
-        <meta property="og:type" content="website" />
+        <meta name="description" content="Challenge yourself with JavaScript questions across multiple difficulty levels." />
       </Helmet>
 
       <main
@@ -107,35 +74,32 @@ const HomePage = () => {
             zIndex: 1,
           }}
         >
-          {/* Game Title */}
+          {/* Title */}
           <motion.div
             animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           >
             <h1
               style={{
                 fontFamily: "var(--font-heading)",
-                fontSize: "clamp(2.2rem, 6vw, 3.5rem)",
+                fontSize: "clamp(1.5rem, 5vw, 2.5rem)",
+                fontWeight: 900,
+                letterSpacing: "3px",
                 background: "linear-gradient(135deg, var(--color-primary), var(--color-sky), var(--color-accent))",
+                backgroundSize: "200% 200%",
+                animation: "gradient-shift 4s ease infinite",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 marginBottom: "8px",
-                lineHeight: 1.2,
+                lineHeight: 1.3,
               }}
             >
-              🎮 JavaScript Quiz Challenge
+              🎮 JAVASCRIPT QUIZ
             </h1>
           </motion.div>
 
-          <p
-            style={{
-              color: "var(--text-secondary)",
-              fontSize: "1.1rem",
-              marginBottom: "32px",
-              fontWeight: 600,
-            }}
-          >
-            Test your JS knowledge • Climb the leaderboard • Have fun!
+          <p style={{ color: "var(--text-secondary)", fontSize: "0.95rem", marginBottom: "36px", fontWeight: 500 }}>
+            Test your JS skills • Climb the leaderboard • Have fun!
           </p>
 
           {/* Username Input */}
@@ -145,106 +109,106 @@ const HomePage = () => {
               style={{
                 display: "block",
                 fontFamily: "var(--font-heading)",
-                fontSize: "1.1rem",
-                marginBottom: "8px",
-                color: "var(--text-primary)",
+                fontSize: "0.75rem",
+                letterSpacing: "2px",
+                marginBottom: "10px",
+                color: "var(--text-secondary)",
               }}
             >
-              👤 What's your name, challenger?
+              ENTER YOUR NAME
             </label>
             <input
               id="username"
               type="text"
-              placeholder="Enter your name..."
+              placeholder="Player name..."
               value={nameInput}
-              onChange={(e) => {
-                setNameInput(e.target.value);
-                setError("");
-              }}
+              onChange={(e) => { setNameInput(e.target.value); setError(""); }}
               maxLength={30}
               style={{
                 width: "100%",
-                padding: "14px 20px",
+                padding: "16px 24px",
                 borderRadius: "var(--radius-xl)",
-                border: "2px solid var(--border-color)",
+                border: "1px solid var(--border-color)",
                 background: "var(--bg-card)",
+                backdropFilter: "blur(12px)",
                 color: "var(--text-primary)",
                 fontSize: "1rem",
                 fontFamily: "var(--font-body)",
                 fontWeight: 600,
                 outline: "none",
-                transition: "border-color 0.3s",
+                transition: "all 0.3s",
                 boxShadow: "var(--shadow-card)",
               }}
-              onFocus={(e) => (e.target.style.borderColor = "var(--color-primary)")}
-              onBlur={(e) => (e.target.style.borderColor = "var(--border-color)")}
+              onFocus={(e) => {
+                e.target.style.borderColor = "var(--color-primary)";
+                e.target.style.boxShadow = "var(--shadow-glow-green)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "var(--border-color)";
+                e.target.style.boxShadow = "var(--shadow-card)";
+              }}
             />
           </div>
 
-          {/* Difficulty Selection */}
+          {/* Difficulty */}
           <div style={{ marginBottom: "28px" }}>
             <p
               style={{
                 fontFamily: "var(--font-heading)",
-                fontSize: "1.1rem",
+                fontSize: "0.75rem",
+                letterSpacing: "2px",
                 marginBottom: "14px",
-                color: "var(--text-primary)",
+                color: "var(--text-secondary)",
               }}
             >
-              🎯 Choose your difficulty
+              SELECT DIFFICULTY
             </p>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: "12px",
-              }}
-            >
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}>
               {DIFFICULTIES.map((diff) => (
                 <DifficultyCard
                   key={diff.id}
                   difficulty={diff}
                   isSelected={selectedDifficulty === diff.id}
-                  onSelect={(id) => {
-                    setSelectedDifficulty(id);
-                    playClick();
-                    setError("");
-                  }}
+                  onSelect={(id) => { setSelectedDifficulty(id); playClick(); setError(""); }}
                 />
               ))}
             </div>
           </div>
 
-          {/* Question Count Selection */}
+          {/* Question Count */}
           <div style={{ marginBottom: "28px" }}>
             <p
               style={{
                 fontFamily: "var(--font-heading)",
-                fontSize: "1.1rem",
+                fontSize: "0.75rem",
+                letterSpacing: "2px",
                 marginBottom: "14px",
-                color: "var(--text-primary)",
+                color: "var(--text-secondary)",
               }}
             >
-              📝 How many questions?
+              QUESTIONS PER ROUND
             </p>
             <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
               {QUESTION_COUNTS.map((count) => (
                 <motion.button
                   key={count}
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.08, y: -3 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => { setSelectedCount(count); setError(""); }}
+                  onClick={() => setSelectedCount(count)}
+                  className="game-card"
                   style={{
-                    padding: "12px 24px",
-                    borderRadius: "var(--radius-md)",
-                    border: `2px solid ${selectedCount === count ? "var(--color-primary)" : "var(--border-color)"}`,
-                    background: selectedCount === count ? "rgba(74, 222, 128, 0.15)" : "var(--bg-card)",
-                    color: selectedCount === count ? "var(--color-primary)" : "var(--text-primary)",
-                    fontFamily: "var(--font-heading)",
-                    fontSize: "1.2rem",
-                    fontWeight: 700,
+                    padding: "14px 28px",
                     cursor: "pointer",
-                    boxShadow: "var(--shadow-card)",
+                    borderColor: selectedCount === count ? "var(--color-primary)" : "var(--border-color)",
+                    background: selectedCount === count
+                      ? "rgba(0, 255, 136, 0.08)"
+                      : "var(--bg-card)",
+                    fontFamily: "var(--font-heading)",
+                    fontSize: "1.1rem",
+                    fontWeight: 700,
+                    letterSpacing: "1px",
+                    color: selectedCount === count ? "var(--color-primary)" : "var(--text-primary)",
+                    boxShadow: selectedCount === count ? "var(--shadow-glow-green)" : "var(--shadow-card)",
                   }}
                 >
                   {count}
@@ -253,7 +217,7 @@ const HomePage = () => {
             </div>
           </div>
 
-          {/* Error Message */}
+          {/* Error */}
           {error && (
             <motion.p
               initial={{ opacity: 0, y: -10 }}
@@ -262,7 +226,7 @@ const HomePage = () => {
                 color: "var(--color-danger)",
                 fontWeight: 700,
                 marginBottom: "16px",
-                fontSize: "0.95rem",
+                fontSize: "0.9rem",
               }}
             >
               ⚠️ {error}
@@ -275,20 +239,20 @@ const HomePage = () => {
             whileTap={{ scale: 0.95 }}
             onClick={handleStartQuiz}
             disabled={isLoading}
-            className="btn-game btn-primary"
+            className="btn-game btn-primary animate-pulse-glow"
             style={{
               width: "100%",
               maxWidth: "320px",
-              fontSize: "1.3rem",
-              padding: "16px 40px",
+              fontSize: "1rem",
+              padding: "18px 40px",
               opacity: isLoading ? 0.7 : 1,
               marginBottom: "12px",
             }}
           >
-            {isLoading ? "⏳ Loading Questions..." : "🚀 Start Solo Quiz!"}
+            {isLoading ? "⏳ LOADING..." : "🚀 START QUIZ"}
           </motion.button>
 
-          {/* Party Mode Button */}
+          {/* Party Button */}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -297,22 +261,15 @@ const HomePage = () => {
             style={{
               width: "100%",
               maxWidth: "320px",
-              fontSize: "1.1rem",
-              padding: "14px 40px",
+              fontSize: "0.9rem",
+              padding: "16px 40px",
             }}
           >
-            🎉 Party Mode (Multiplayer)
+            🎉 PARTY MODE (MULTIPLAYER)
           </motion.button>
 
-          {/* Quick Stats */}
-          <p
-            style={{
-              marginTop: "20px",
-              color: "var(--text-muted)",
-              fontSize: "0.85rem",
-            }}
-          >
-            {selectedCount} questions • Randomized each time • Timed challenge
+          <p style={{ marginTop: "20px", color: "var(--text-muted)", fontSize: "0.8rem" }}>
+            {selectedCount} questions • Randomized • Timed
           </p>
         </motion.div>
       </main>

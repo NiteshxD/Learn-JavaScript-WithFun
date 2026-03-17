@@ -1,28 +1,18 @@
 // =============================================================================
-// Timer Component
-// =============================================================================
-// Displays the elapsed time in MM:SS.cc format (centiseconds / hundredths).
+// Timer Component — Neon timer display
 // =============================================================================
 
-/**
- * Format milliseconds to MM:SS.cc string
- */
 const formatTimerDisplay = (ms) => {
   const totalSeconds = Math.floor(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-  const centiseconds = Math.floor((ms % 1000) / 10); // hundredths of a second
-
+  const centiseconds = Math.floor((ms % 1000) / 10);
   const mm = String(minutes).padStart(2, "0");
   const ss = String(seconds).padStart(2, "0");
   const cc = String(centiseconds).padStart(2, "0");
   return `${mm}:${ss}.${cc}`;
 };
 
-/**
- * @param {Object} props
- * @param {number} props.elapsedMs - Elapsed milliseconds
- */
 const Timer = ({ elapsedMs }) => {
   return (
     <div
@@ -30,16 +20,20 @@ const Timer = ({ elapsedMs }) => {
         display: "inline-flex",
         alignItems: "center",
         gap: "8px",
-        padding: "8px 18px",
+        padding: "10px 20px",
         borderRadius: "var(--radius-full)",
         background: "var(--bg-card)",
-        border: "2px solid var(--border-color)",
+        backdropFilter: "blur(12px)",
+        border: "1px solid var(--border-glow)",
         fontFamily: "var(--font-heading)",
-        fontSize: "1.1rem",
-        color: "var(--text-primary)",
+        fontSize: "0.9rem",
+        fontWeight: 700,
+        letterSpacing: "1px",
+        color: "var(--color-primary)",
         boxShadow: "var(--shadow-card)",
         minWidth: "160px",
-        fontVariantNumeric: "tabular-nums", // Prevents layout shift with changing digits
+        fontVariantNumeric: "tabular-nums",
+        textShadow: "0 0 10px rgba(0, 255, 136, 0.3)",
       }}
     >
       <span>⏱️</span>
