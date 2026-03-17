@@ -1,6 +1,6 @@
 # 🎮 JavaScript Quiz Challenge
 
-A **gamified JavaScript quiz platform** built with the MERN stack. Test your JavaScript knowledge with 150 curated questions across 3 difficulty levels, compete on the global leaderboard, and learn while you play!
+A **gamified JavaScript quiz platform** built with the MERN stack. Test your JavaScript knowledge with thousands curated questions across 3 difficulty levels, compete on the global leaderboard, and learn while you play!
 
 ![Homepage](./screenshots/homepage.png)
 
@@ -8,7 +8,7 @@ A **gamified JavaScript quiz platform** built with the MERN stack. Test your Jav
 
 | Feature | Description |
 |---------|-------------|
-| 🎯 **50 Randomized Questions** | Every quiz attempt shuffles questions for a unique experience |
+| 🎯 ** Randomized Questions** | Every quiz attempt shuffles questions for a unique experience |
 | 📊 **3 Difficulty Levels** | Easy, Medium, and Hard to match your skill level |
 | ⏱️ **Real-Time Timer** | Track how fast you can complete the quiz |
 | 🔥 **Streak System** | Build consecutive correct answer streaks with milestone celebrations |
@@ -18,7 +18,7 @@ A **gamified JavaScript quiz platform** built with the MERN stack. Test your Jav
 | 🌙 **Dark Mode** | Toggle between light and dark themes (persisted in localStorage) |
 | 📤 **Share Score** | Share results on WhatsApp, Twitter/X, and LinkedIn |
 | 📱 **Responsive Design** | Works on mobile, tablet, and desktop |
-| 🎨 **Playful UI** | Cut the Rope 2 inspired design with smooth Framer Motion animations |
+
 
 ## 🛠️ Tech Stack
 
