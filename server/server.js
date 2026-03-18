@@ -39,13 +39,12 @@ const server = http.createServer(app);
 // CORS Configuration
 // =============================================================================
 
-const allowedOrigins = process.env.CLIENT_URL
-  ? process.env.CLIENT_URL.split(",").map((url) => url.trim())
-  : ["*"];
-
+// Use origin: true to dynamically reflect the request origin.
+// This allows any frontend (like your Vercel app) to connect without CORS errors,
+// and it properly supports credentials: true (which fails if origin is "*").
 const corsOptions = {
-  origin: allowedOrigins.includes("*") ? "*" : allowedOrigins,
-  methods: ["GET", "POST"],
+  origin: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   credentials: true,
 };
 
@@ -58,8 +57,9 @@ app.use(cors(corsOptions));
 
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins.includes("*") ? "*" : allowedOrigins,
+    origin: true,
     methods: ["GET", "POST"],
+    credentials: true,
   },
   // Render/Vercel compatible transports
   transports: ["websocket", "polling"],
