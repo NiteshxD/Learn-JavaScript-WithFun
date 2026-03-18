@@ -28,8 +28,8 @@ export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem("jsquiz-theme");
     if (saved) return saved;
-    // Check system dark mode preference
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    // Default to dark mode on first visit
+    return "dark";
   });
 
   // Apply theme to the document when it changes

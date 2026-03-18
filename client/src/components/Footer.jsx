@@ -15,7 +15,7 @@ const Footer = () => {
         marginTop: "auto",
       }}
     >
-      <p>🎮 JavaScript Quiz Challenge — Built with MERN Stack</p>
+      <p>🎮 JavaScript Quiz Challenge — Build by Nitesh Yadav</p>
       <p style={{ marginTop: "4px", fontSize: "0.8rem" }}>
         Made with ❤️ for learning JavaScript
       </p>
